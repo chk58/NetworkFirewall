@@ -1,0 +1,67 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <ImageView 
+        android:id="@+id/app_icon"
+        android:layout_width="50dip"
+        android:layout_height="50dip"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:scaleType="centerInside"/>
+
+    <LinearLayout
+        android:id="@+id/strings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/buttons"
+        android:layout_toRightOf="@+id/app_icon"
+        android:paddingLeft="5dip"
+        android:orientation="vertical">
+
+        <TextView android:id="@+id/app_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:lines="1"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:ellipsize="end"/>
+        <TextView android:id="@+id/last_update_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:lines="1"
+            android:textSize="10sp"/>
+        <TextView android:id="@+id/app_package_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:textSize="10sp"
+            android:ellipsize="end"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:gravity="right|center_vertical"
+        android:paddingLeft="5dip"
+        android:orientation="vertical">
+        <Switch android:id="@+id/app_wifi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:switchPadding="0dip"
+            android:text="wifi"
+            android:checked="true"/>
+        <Switch android:id="@+id/app_3g"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:switchPadding="0dip"
+            android:text="3g"
+            android:checked="true"/>
+    </LinearLayout>
+</RelativeLayout>
