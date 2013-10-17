@@ -6,47 +6,34 @@ import java.util.Collections;
 import java.util.List;
 
 import android.app.ListActivity;
+import android.app.LoaderManager;
+import android.app.LoaderManager.LoaderCallbacks;
+import android.content.AsyncTaskLoader;
+import android.content.Loader;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.os.Process;
 import android.view.Menu;
 import chk.android.networkfirewall.script.Script;
 
-public class ApplicationListActivity extends ListActivity {
+public class ApplicationListActivity extends ListActivity implements
+        LoaderCallbacks<ArrayList<AppInfo>> {
+
+    private static final int LOADER_ID = 0;
+
     private ApplicationListAdapter mAdapter;
-    private ArrayList<AppInfo> mAppList = new ArrayList<AppInfo>();
-
-    private Handler mHandler = new Handler() {
-
-        @Override
-        public void handleMessage(Message msg) {
-            mAdapter = new ApplicationListAdapter(ApplicationListActivity.this,
-                    mAppList);
-            setListAdapter(mAdapter);
-        }
-    };
+    private int mMyUid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.application_list);
+        mMyUid = getApplicationInfo().uid;
 
-        getActionBar().setTitle(
-                getApplicationInfo().loadLabel(getPackageManager()) + " ("
-                        + String.valueOf(getApplicationInfo().uid) + ")");
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Script.initIpTablesIfNecessary(ApplicationListActivity.this);
-                initAppList();
-                mHandler.sendEmptyMessage(0);
-            }
-        }).start();
+        LoaderManager lm = getLoaderManager();
+        lm.initLoader(LOADER_ID, null, this);
     }
 
     @Override
@@ -56,7 +43,8 @@ public class ApplicationListActivity extends ListActivity {
         return true;
     }
 
-    private void initAppList() {
+    private ArrayList<AppInfo> createAppList() {
+        final ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
         PackageManager pm = getPackageManager();
         List<PackageInfo> list = pm
                 .getInstalledPackages(PackageManager.GET_GIDS);
@@ -73,13 +61,13 @@ public class ApplicationListActivity extends ListActivity {
             }
             uid = a.uid;
             if (uid < Process.FIRST_APPLICATION_UID
-                    || uid == getApplicationInfo().uid) {
+                    || uid == mMyUid) {
                 continue;
             }
 
-            if (checkSystemApp(a)) {
-                continue;
-            }
+            // if (checkSystemApp(a)) {
+            // continue;
+            // }
 
             if (!checkNetWorkPermission(p)) {
                 continue;
@@ -89,10 +77,11 @@ public class ApplicationListActivity extends ListActivity {
             app.disabledWifi = rejectedWifi.contains(uid);
             app.disabled3g = rejected3g.contains(uid);
 
-            mAppList.add(app);
+            appList.add(app);
         }
 
-        Collections.sort(mAppList);
+        Collections.sort(appList);
+        return appList;
     }
 
     private boolean checkSystemApp(ApplicationInfo a) {
@@ -111,5 +100,28 @@ public class ApplicationListActivity extends ListActivity {
             }
         }
         return result;
+    }
+
+    @Override
+    public Loader<ArrayList<AppInfo>> onCreateLoader(int id, Bundle args) {
+        return (new AsyncTaskLoader<ArrayList<AppInfo>>(this) {
+            @Override
+            public ArrayList<AppInfo> loadInBackground() {
+                return createAppList();
+            }
+        });
+    }
+
+    @Override
+    public void onLoadFinished(Loader<ArrayList<AppInfo>> loader,
+            ArrayList<AppInfo> data) {
+        mAdapter = new ApplicationListAdapter(ApplicationListActivity.this,
+                data);
+        setListAdapter(mAdapter);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<ArrayList<AppInfo>> loader) {
+        setListAdapter(null);
     }
 }
