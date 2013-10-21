@@ -1,127 +1,135 @@
 package chk.android.networkfirewall;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
+import android.app.ActionBar;
 import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
-import android.content.AsyncTaskLoader;
 import android.content.Loader;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Process;
+import android.text.TextUtils;
 import android.view.Menu;
-import chk.android.networkfirewall.script.Script;
+import android.view.MenuItem;
+import android.view.View;
+import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
 
 public class ApplicationListActivity extends ListActivity implements
         LoaderCallbacks<ArrayList<AppInfo>> {
 
     private static final int LOADER_ID = 0;
 
+    private LoaderParams mParams;
+
+    private SearchController mSearchController;
     private ApplicationListAdapter mAdapter;
-    private int mMyUid;
+    private ApplicationListLoader mLoader;
+    private View mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.application_list);
-        mMyUid = getApplicationInfo().uid;
 
-        LoaderManager lm = getLoaderManager();
-        lm.initLoader(LOADER_ID, null, this);
+        mParams = new LoaderParams();
+        getActionBar().setDisplayOptions(
+                ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_CUSTOM);
+        getActionBar().setCustomView(R.layout.action_bar_custom_view);
+        mProgressBar = getActionBar().getCustomView().findViewById(
+                R.id.progress_bar);
+
+        mSearchController = new SearchController(this);
+        loadAppList();
+
+        // getContentResolver().notifyChange(uri, observer, syncToNetwork)
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.application_list, menu);
         return true;
     }
 
-    private ArrayList<AppInfo> createAppList() {
-        final ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
-        PackageManager pm = getPackageManager();
-        List<PackageInfo> list = pm
-                .getInstalledPackages(PackageManager.GET_GIDS);
-        final File file = new File(getCacheDir(), Script.SCRIPT_FILE);
-        ArrayList<Integer> rejectedWifi = Script.getAllRejectedApps(file,
-                Script.NETWORK_MODE_WIFI);
-        ArrayList<Integer> rejected3g = Script.getAllRejectedApps(file,
-                Script.NETWORK_MODE_3G);
-        int uid;
-        for (PackageInfo p : list) {
-            ApplicationInfo a = p.applicationInfo;
-            if (a == null) {
-                continue;
-            }
-            uid = a.uid;
-            if (uid < Process.FIRST_APPLICATION_UID
-                    || uid == mMyUid) {
-                continue;
-            }
-
-            // if (checkSystemApp(a)) {
-            // continue;
-            // }
-
-            if (!checkNetWorkPermission(p)) {
-                continue;
-            }
-
-            AppInfo app = new AppInfo(pm, a, p.lastUpdateTime);
-            app.disabledWifi = rejectedWifi.contains(uid);
-            app.disabled3g = rejected3g.contains(uid);
-
-            appList.add(app);
+    @Override
+    public void onBackPressed() {
+        if (!mSearchController.onBackPressed()) {
+            super.onBackPressed();
         }
-
-        Collections.sort(appList);
-        return appList;
     }
 
-    private boolean checkSystemApp(ApplicationInfo a) {
-        return (a.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
-    }
-
-    private boolean checkNetWorkPermission(PackageInfo p) {
-        boolean result = false;
-        int[] gids = p.gids;
-        if (gids != null && gids.length > 0) {
-            for (int g : gids) {
-                if (g == 3003) {
-                    result = true;
-                    break;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.action_settings:
+            return true;
+        case R.id.show_sys_app:
+            if (item.isCheckable()) {
+                boolean check;
+                if (item.isChecked()) {
+                    item.setChecked(false);
+                    check = false;
+                } else {
+                    item.setChecked(true);
+                    check = true;
                 }
+                swtichSysApps(check);
+                return true;
             }
+        case R.id.search:
+            mSearchController.showSearchBar();
+            return true;
         }
-        return result;
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void loadAppList() {
+        if (mLoader == null) {
+            LoaderManager lm = getLoaderManager();
+            lm.initLoader(LOADER_ID, null, this);
+        } else {
+            mLoader.setLoaderParams(mParams);
+            mLoader.onContentChanged();
+        }
+
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
+
+    public void swtichSysApps(boolean show) {
+        if (mParams.showSysApps != show) {
+            mParams.showSysApps = show;
+            loadAppList();
+        }
+    }
+
+    public void startQuery(String text) {
+        if (TextUtils.isEmpty(text) && TextUtils.isEmpty(mParams.query)) {
+            return;
+        }
+        if (text != null && text.equalsIgnoreCase(mParams.query)) {
+            return;
+        }
+        mParams.query = text;
+        loadAppList();
     }
 
     @Override
     public Loader<ArrayList<AppInfo>> onCreateLoader(int id, Bundle args) {
-        return (new AsyncTaskLoader<ArrayList<AppInfo>>(this) {
-            @Override
-            public ArrayList<AppInfo> loadInBackground() {
-                return createAppList();
-            }
-        });
+        mLoader = new ApplicationListLoader(this, mParams);
+        return mLoader;
     }
 
     @Override
     public void onLoadFinished(Loader<ArrayList<AppInfo>> loader,
             ArrayList<AppInfo> data) {
         mAdapter = new ApplicationListAdapter(ApplicationListActivity.this,
-                data);
+                data, mParams);
         setListAdapter(mAdapter);
+        mProgressBar.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onLoaderReset(Loader<ArrayList<AppInfo>> loader) {
         setListAdapter(null);
+        mLoader = null;
     }
 }

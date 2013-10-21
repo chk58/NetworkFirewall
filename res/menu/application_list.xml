@@ -1,9 +1,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
+    <item
+        android:id="@+id/search"
+        android:orderInCategory="80"
+        android:showAsAction="never"
+        android:title="@string/action_search"
+        android:icon="@android:drawable/ic_menu_search" />
+    <item
+        android:id="@+id/show_sys_app"
+        android:orderInCategory="90"
+        android:showAsAction="never"
+        android:title="@string/action_show_system_app"
+        android:checkable="true"
+        android:checked="false" />
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/action_settings"/>
-
+        android:title="@string/action_settings" />
 </menu>

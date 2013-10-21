@@ -11,9 +11,11 @@ public class AppInfo extends ApplicationInfo implements Comparable<AppInfo> {
     public long lastUpdateTime;
     public boolean disabledWifi = false;
     public boolean disabled3g = false;
-    public AppInfo(PackageManager pm, ApplicationInfo orig, long lastUpdateTime) {
+
+    public AppInfo(PackageManager pm, ApplicationInfo orig, String l,
+            long lastUpdateTime) {
         super(orig);
-        label = loadLabel(pm).toString();
+        label = l;
         icon = loadIcon(pm);
         this.lastUpdateTime = lastUpdateTime;
     }

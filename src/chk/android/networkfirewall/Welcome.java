@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import chk.android.networkfirewall.script.Script;
+import chk.android.networkfirewall.script.Controller;
 
 public class Welcome extends Activity {
     public static final long TIME = 350;
@@ -27,7 +27,7 @@ public class Welcome extends Activity {
             @Override
             public void run() {
                 long time1 = System.currentTimeMillis();
-                Script.initIpTablesIfNecessary(Welcome.this);
+                Controller.initIpTablesIfNecessary(Welcome.this);
                 long time2 = System.currentTimeMillis() - time1;
 
                 if (time2 < TIME) {

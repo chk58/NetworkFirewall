@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,20 +14,25 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
-import chk.android.networkfirewall.script.Script;
+import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
+import chk.android.networkfirewall.script.Controller;
 
 public class ApplicationListAdapter extends BaseAdapter implements
         OnClickListener {
 
+    @SuppressLint("SimpleDateFormat")
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private ArrayList<AppInfo> mAppList;
     private final Context mContext;
     private final LayoutInflater mInflater;
+    private final LoaderParams mParams;
 
-    public ApplicationListAdapter(Context context, ArrayList<AppInfo> list) {
+    public ApplicationListAdapter(Context context, ArrayList<AppInfo> list,
+            LoaderParams params) {
         mInflater = LayoutInflater.from(context);
         mAppList = list;
         mContext = context;
+        mParams = params;
     }
 
     @Override
@@ -58,7 +64,8 @@ public class ApplicationListAdapter extends BaseAdapter implements
         iv.setImageDrawable(app.icon);
 
         TextView tv = (TextView) v.findViewById(R.id.app_label);
-        tv.setText("(" + String.valueOf(app.uid) + ") " + app.label);
+        // tv.setText("(" + String.valueOf(app.uid) + ") " + app.label);
+        tv.setText(Utils.highlightQuery(mParams.query, app.label));
 
         tv = (TextView) v.findViewById(R.id.last_update_time);
         String time = "-";
@@ -69,7 +76,7 @@ public class ApplicationListAdapter extends BaseAdapter implements
         tv.setText(time);
 
         tv = (TextView) v.findViewById(R.id.app_package_name);
-        tv.setText(app.packageName);
+        tv.setText(Utils.highlightQuery(mParams.query, app.packageName));
 
         Switch s = (Switch) v.findViewById(R.id.app_wifi);
         s.setChecked(!app.disabledWifi);
@@ -87,11 +94,11 @@ public class ApplicationListAdapter extends BaseAdapter implements
     public void onClick(View v) {
         Switch s = ((Switch) v);
         String uid = v.getTag().toString();
-        int mode = Script.NETWORK_MODE_WIFI;
+        int mode = Controller.NETWORK_MODE_WIFI;
         if (v.getId() == R.id.app_wifi) {
-            mode = Script.NETWORK_MODE_WIFI;
+            mode = Controller.NETWORK_MODE_WIFI;
         } else if (v.getId() == R.id.app_3g) {
-            mode = Script.NETWORK_MODE_3G;
+            mode = Controller.NETWORK_MODE_3G;
         } else {
             throw new IllegalArgumentException("Unknow click.");
         }
@@ -99,17 +106,17 @@ public class ApplicationListAdapter extends BaseAdapter implements
         AppInfo a = findAppInfoByUid(Integer.parseInt(uid));
 
         switch (mode) {
-        case Script.NETWORK_MODE_WIFI:
+        case Controller.NETWORK_MODE_WIFI:
             a.disabledWifi = !s.isChecked();
             break;
-        case Script.NETWORK_MODE_3G:
+        case Controller.NETWORK_MODE_3G:
             a.disabled3g = !s.isChecked();
             break;
         default:
             throw new IllegalArgumentException("Unknow network mode : " + mode);
         }
 
-        Script.handleApp(mContext, a, mode);
+        Controller.handleApp(mContext, a, mode);
     }
 
     private AppInfo findAppInfoByUid(int uid) {

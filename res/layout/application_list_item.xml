@@ -26,19 +26,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:lines="1"
-            android:textSize="10sp"
             android:textStyle="bold"
             android:ellipsize="end"/>
         <TextView android:id="@+id/last_update_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:lines="1"
-            android:textSize="10sp"/>
+            android:textSize="12sp"/>
         <TextView android:id="@+id/app_package_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="2"
-            android:textSize="10sp"
+            android:textSize="12sp"
             android:ellipsize="end"/>
     </LinearLayout>
 
@@ -55,13 +54,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:switchPadding="0dip"
-            android:text="wifi"
+            android:text="@string/checkbox_text_wifi"
             android:checked="true"/>
         <Switch android:id="@+id/app_3g"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:switchPadding="0dip"
-            android:text="3g"
+            android:text="@string/checkbox_text_3g"
             android:checked="true"/>
     </LinearLayout>
 </RelativeLayout>
