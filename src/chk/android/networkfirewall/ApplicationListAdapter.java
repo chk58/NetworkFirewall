@@ -81,11 +81,13 @@ public class ApplicationListAdapter extends BaseAdapter implements
         Switch s = (Switch) v.findViewById(R.id.app_wifi);
         s.setChecked(!app.disabledWifi);
         s.setTag(app.uid);
+        // s.setEnabled(false);
         s.setOnClickListener(this);
 
         s = (Switch) v.findViewById(R.id.app_3g);
         s.setChecked(!app.disabled3g);
         s.setTag(app.uid);
+        s.setEnabled(false);
         s.setOnClickListener(this);
         return v;
     }
