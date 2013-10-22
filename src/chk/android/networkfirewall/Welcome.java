@@ -9,7 +9,7 @@ import android.util.Log;
 import chk.android.networkfirewall.script.Controller;
 
 public class Welcome extends Activity {
-    public static final long TIME = 350;
+    public static final long TIME = 400;
 
     private static Handler mHandler = new Handler() {
         @Override

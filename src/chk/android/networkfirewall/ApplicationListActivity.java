@@ -7,7 +7,9 @@ import android.app.ListActivity;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Loader;
+import android.database.ContentObserver;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,6 +27,19 @@ public class ApplicationListActivity extends ListActivity implements
     private ApplicationListAdapter mAdapter;
     private ApplicationListLoader mLoader;
     private View mProgressBar;
+    private PackageChangedObserver mObserver;
+
+    private class PackageChangedObserver extends ContentObserver {
+
+        public PackageChangedObserver() {
+            super(new Handler());
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            loadAppList();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,15 +54,21 @@ public class ApplicationListActivity extends ListActivity implements
                 R.id.progress_bar);
 
         mSearchController = new SearchController(this);
-        loadAppList();
 
-        // getContentResolver().notifyChange(uri, observer, syncToNetwork)
+        mObserver = new PackageChangedObserver();
+        getContentResolver().registerContentObserver(Utils.NOTIFY_URI, false,
+                mObserver);
+
+        loadAppList();
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.application_list, menu);
-        return true;
+    protected void onDestroy() {
+        if (mObserver != null) {
+            getContentResolver().unregisterContentObserver(mObserver);
+            mObserver = null;
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -55,6 +76,12 @@ public class ApplicationListActivity extends ListActivity implements
         if (!mSearchController.onBackPressed()) {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.application_list, menu);
+        return true;
     }
 
     @Override

@@ -54,13 +54,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:switchPadding="0dip"
-            android:text="@string/checkbox_text_wifi"
+            android:thumb="@drawable/switch_wifi"
+            android:track="@drawable/switch_track"
+            android:textOn=""
+            android:textOff=""
+            android:thumbTextPadding="12dp"
             android:checked="true"/>
         <Switch android:id="@+id/app_3g"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:switchPadding="0dip"
-            android:text="@string/checkbox_text_3g"
+            android:thumb="@drawable/switch_3g"
+            android:track="@drawable/switch_track"
+            android:textOn=""
+            android:textOff=""
+            android:thumbTextPadding="12dp"
             android:checked="true"/>
     </LinearLayout>
 </RelativeLayout>

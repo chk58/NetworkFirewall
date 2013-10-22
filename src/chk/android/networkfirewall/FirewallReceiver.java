@@ -12,18 +12,16 @@ public class FirewallReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            Log.e("chk", "ACTION_BOOT_COMPLETED");
             Controller.initIpTablesIfNecessary(context);
-            Log.e("chk", "init finished");
-        } else if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())) {
+        } else if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())
+                && !intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) {
             String packageName = intent.getData().getEncodedSchemeSpecificPart();
-            Log.e("chk", "removed package name : " + packageName);
             int uid = NetworkFirewall.findUidByPackageName(context, packageName);
             if (uid > 0) {
-                Log.e("chk", "removed package uid : " + uid);
                 Controller.deleteAppInfo(context, String.valueOf(uid));
-                Log.e("chk", "delete completed");
             }
         }
+        context.getContentResolver().notifyChange(Utils.NOTIFY_URI, null);
+        Log.d("chk", intent.getAction());
     }
 }

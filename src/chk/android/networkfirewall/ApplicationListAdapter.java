@@ -64,8 +64,8 @@ public class ApplicationListAdapter extends BaseAdapter implements
         iv.setImageDrawable(app.icon);
 
         TextView tv = (TextView) v.findViewById(R.id.app_label);
-        // tv.setText("(" + String.valueOf(app.uid) + ") " + app.label);
-        tv.setText(Utils.highlightQuery(mParams.query, app.label));
+        tv.setText("(" + String.valueOf(app.uid) + ") " + app.label);
+        // tv.setText(Utils.highlightQuery(mParams.query, app.label));
 
         tv = (TextView) v.findViewById(R.id.last_update_time);
         String time = "-";

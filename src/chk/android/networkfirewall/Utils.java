@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.net.Uri;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -12,6 +13,8 @@ import android.text.style.BackgroundColorSpan;
 
 public class Utils {
     public static final int HIGHLIGHT_COLOR_INT = 0xFF09AFED;
+    public static final Uri NOTIFY_URI = Uri
+            .parse("networkfirewall://package_changed");
 
     public static boolean checkSystemApp(ApplicationInfo a) {
         return (a.flags & ApplicationInfo.FLAG_SYSTEM) != 0;

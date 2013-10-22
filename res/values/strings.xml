@@ -6,8 +6,8 @@
     <string name="action_show_system_app">Show system apps</string>
     <string name="action_search">Search</string>
     <string name="hello_world">Hello world!</string>
-    <string name="checkbox_text_wifi">Wifi</string>
-    <string name="checkbox_text_3g">3g</string>
+    <string name="checkbox_text_wifi">W</string>
+    <string name="checkbox_text_3g">M</string>
     <string name="search_hint">App/package name</string>
 
 </resources>
