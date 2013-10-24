@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import chk.android.networkfirewall.script.Controller;
+import chk.android.networkfirewall.controller.Controller;
 
 public class Welcome extends Activity {
     public static final long TIME = 400;

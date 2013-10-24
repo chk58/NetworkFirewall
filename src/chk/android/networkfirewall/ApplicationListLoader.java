@@ -13,7 +13,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Process;
 import android.text.TextUtils;
-import chk.android.networkfirewall.script.Controller;
+import chk.android.networkfirewall.controller.Controller;
 
 public class ApplicationListLoader extends AsyncTaskLoader<ArrayList<AppInfo>> {
 

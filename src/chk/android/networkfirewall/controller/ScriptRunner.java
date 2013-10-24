@@ -1,4 +1,4 @@
-package chk.android.networkfirewall.script;
+package chk.android.networkfirewall.controller;
 
 import java.io.BufferedReader;
 import java.io.File;

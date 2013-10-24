@@ -4,8 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import chk.android.networkfirewall.controller.Controller;
 import chk.android.networkfirewall.provider.NetworkFirewall;
-import chk.android.networkfirewall.script.Controller;
 
 public class FirewallReceiver extends BroadcastReceiver {
 

@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
-import chk.android.networkfirewall.script.Controller;
+import chk.android.networkfirewall.controller.Controller;
 
 public class ApplicationListAdapter extends BaseAdapter implements
         OnClickListener {
@@ -87,7 +87,7 @@ public class ApplicationListAdapter extends BaseAdapter implements
         s = (Switch) v.findViewById(R.id.app_3g);
         s.setChecked(!app.disabled3g);
         s.setTag(app.uid);
-        s.setEnabled(false);
+        // s.setEnabled(false);
         s.setOnClickListener(this);
         return v;
     }
