@@ -56,7 +56,7 @@ public class ApplicationListActivity extends ListActivity implements
         mSearchController = new SearchController(this);
 
         mObserver = new PackageChangedObserver();
-        getContentResolver().registerContentObserver(Utils.NOTIFY_URI, false,
+        getContentResolver().registerContentObserver(Utils.NOTIFY_URI_PACAKGE_CHANGED, false,
                 mObserver);
 
         loadAppList();

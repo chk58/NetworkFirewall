@@ -17,8 +17,7 @@ import android.widget.TextView;
 import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
 import chk.android.networkfirewall.controller.Controller;
 
-public class ApplicationListAdapter extends BaseAdapter implements
-        OnClickListener {
+public class ApplicationListAdapter extends BaseAdapter implements OnClickListener {
 
     @SuppressLint("SimpleDateFormat")
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -109,13 +108,13 @@ public class ApplicationListAdapter extends BaseAdapter implements
 
         switch (mode) {
         case Controller.NETWORK_MODE_WIFI:
-            a.disabledWifi = !s.isChecked();
-            break;
+                a.disabledWifi = !s.isChecked();
+                break;
         case Controller.NETWORK_MODE_3G:
-            a.disabled3g = !s.isChecked();
-            break;
+                a.disabled3g = !s.isChecked();
+                break;
         default:
-            throw new IllegalArgumentException("Unknow network mode : " + mode);
+                throw new IllegalArgumentException("Unknow network mode : " + mode);
         }
 
         Controller.handleApp(mContext, a, mode);

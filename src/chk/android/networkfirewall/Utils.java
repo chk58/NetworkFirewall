@@ -2,22 +2,40 @@ package chk.android.networkfirewall;
 
 import java.util.Locale;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
+import android.util.Log;
 
 public class Utils {
+    public static final String TAG = "chk";
     public static final int HIGHLIGHT_COLOR_INT = 0xFF09AFED;
-    public static final Uri NOTIFY_URI = Uri
+    public static final Uri NOTIFY_URI_PACAKGE_CHANGED = Uri
             .parse("networkfirewall://package_changed");
+    public static final String EXTRA_KEY = "networkfirewall_intent";
 
     public static boolean checkSystemApp(ApplicationInfo a) {
         return (a.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+    }
+
+    public static boolean checkNetWorkPermission(Context context, String packageName) {
+        final PackageManager pm = context.getPackageManager();
+        boolean result = false;
+        try {
+            PackageInfo p = pm.getPackageInfo(packageName, PackageManager.GET_GIDS);
+            result = checkNetWorkPermission(p);
+        } catch (NameNotFoundException e) {
+            Log.w(TAG, "Not found : " + packageName);
+        }
+        return result;
     }
 
     public static boolean checkNetWorkPermission(PackageInfo p) {

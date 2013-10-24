@@ -15,7 +15,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="chk.android.networkfirewall.Welcome"
+            android:name=".Welcome"
             android:theme="@style/AppTheme_NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,7 +24,7 @@
         </activity>
 
         <activity
-            android:name="chk.android.networkfirewall.ApplicationListActivity"
+            android:name=".ApplicationListActivity"
             android:screenOrientation="portrait"
             android:label="@string/app_name"
             android:exported="false" />
@@ -33,17 +33,17 @@
             android:authorities="chk.android.networkfirewall.provider"
             android:exported="false" />
 
-        <receiver android:name="FirewallReceiver">
+        <service android:name=".service.FirewallService"
+            android:exported="false" />
+
+        <receiver android:name=".service.FirewallReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_ADDED" />
-                <action android:name="android.intent.action.PACKAGE_CHANGED" />
-                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED" />
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />
                 <action android:name="android.intent.action.PACKAGE_REPLACED" />
-                <action android:name="android.intent.action.PACKAGE_RESTARTED" />
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>
