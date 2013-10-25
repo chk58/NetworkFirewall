@@ -88,6 +88,12 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
         s.setTag(app.uid);
         // s.setEnabled(false);
         s.setOnClickListener(this);
+
+        // ImageButton button = (ImageButton) v.findViewById(R.id.button);
+        // TransitionDrawable drawable = (TransitionDrawable)
+        // button.getDrawable();
+        // drawable.startTransition(500);
+
         return v;
     }
 
