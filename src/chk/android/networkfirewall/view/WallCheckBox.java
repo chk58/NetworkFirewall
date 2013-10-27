@@ -1,4 +1,4 @@
-package chk.android.networkfirewall;
+package chk.android.networkfirewall.view;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -7,28 +7,24 @@ import android.widget.CompoundButton;
 
 public class WallCheckBox extends CompoundButton {
 
-    @Override
-    public void setBackgroundResource(int resid) {
-        super.setBackgroundResource(resid);
-    }
-
-    @Override
-    public Drawable getBackground() {
-        return super.getBackground();
-    }
-
     public WallCheckBox(Context context) {
         super(context);
-        setButtonDrawable(R.drawable.checkbox_on);
+        init();
     }
 
     public WallCheckBox(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setButtonDrawable(R.drawable.checkbox_on);
+        init();
     }
 
     public WallCheckBox(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        setButtonDrawable(R.drawable.checkbox_on);
+        init();
+    }
+
+    private void init() {
+        setClickable(true);
+        Drawable d = new WallCheckBoxDrawable(getContext().getResources());
+        setButtonDrawable(d);
     }
 }

@@ -68,8 +68,10 @@
             android:textOn=""
             android:textOff=""
             android:checked="true"/>
-        <chk.android.networkfirewall.WallCheckBox
+
+        <chk.android.networkfirewall.view.WallCheckBox
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@android:color/holo_green_light" />
     </LinearLayout>
 </RelativeLayout>

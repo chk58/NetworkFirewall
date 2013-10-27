@@ -62,7 +62,7 @@ public class Controller {
             sb.append("iptables -N " + REJECT_CHAIN_NAME_WIFI + "\n");
             sb.append("iptables -N " + REJECT_CHAIN_NAME_3G + "\n");
 
-            sb.append("iptables -A " + CHAIN_NAME_OUTPUT + " -j "
+            sb.append("iptables -I " + CHAIN_NAME_OUTPUT + " 1 -j "
                     + MAIN_CHAIN_NAME + "\n");
             for (final String itf : ITFS_WIFI) {
                 sb.append("iptables -A " + MAIN_CHAIN_NAME + " -o " + itf

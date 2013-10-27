@@ -6,6 +6,7 @@ import java.util.Date;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -63,7 +64,9 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
         iv.setImageDrawable(app.icon);
 
         TextView tv = (TextView) v.findViewById(R.id.app_label);
-        tv.setText("(" + String.valueOf(app.uid) + ") " + app.label);
+        SpannableStringBuilder ssb = new SpannableStringBuilder("(" + String.valueOf(app.uid) + ") ");
+        ssb.append(Utils.highlightQuery(mParams.query, app.label));
+        tv.setText(ssb);
         // tv.setText(Utils.highlightQuery(mParams.query, app.label));
 
         tv = (TextView) v.findViewById(R.id.last_update_time);
