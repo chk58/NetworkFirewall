@@ -1,0 +1,8 @@
+<resources>
+    <declare-styleable name="WallCheckBox">
+        <attr name="signal">
+            <enum name="signal_wifi" value="0"/>
+            <enum name="signal_3g" value="1"/>
+        </attr>
+    </declare-styleable>
+</resources>

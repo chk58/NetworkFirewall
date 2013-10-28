@@ -1,5 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:chk="http://schemas.android.com/apk/res/chk.android.networkfirewall"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
 
@@ -70,8 +70,16 @@
             android:checked="true"/>
 
         <chk.android.networkfirewall.view.WallCheckBox
+            android:id="@+id/checkbox_wifi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/holo_green_light" />
+            android:background="@android:color/holo_green_light"
+            chk:signal="signal_wifi" />
+        <chk.android.networkfirewall.view.WallCheckBox
+            android:id="@+id/checkbox_3g"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/holo_green_light"
+            chk:signal="signal_3g" />
     </LinearLayout>
 </RelativeLayout>

@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -92,6 +93,11 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
         // s.setEnabled(false);
         s.setOnClickListener(this);
 
+        CompoundButton cb = (CompoundButton) v.findViewById(R.id.checkbox_wifi);
+        cb.setChecked(!app.disabledWifi);
+
+        cb = (CompoundButton) v.findViewById(R.id.checkbox_3g);
+        cb.setChecked(!app.disabled3g);
         // ImageButton button = (ImageButton) v.findViewById(R.id.button);
         // TransitionDrawable drawable = (TransitionDrawable)
         // button.getDrawable();
