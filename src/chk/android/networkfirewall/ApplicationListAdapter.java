@@ -6,7 +6,7 @@ import java.util.Date;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.text.SpannableStringBuilder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
 import chk.android.networkfirewall.controller.Controller;
@@ -65,10 +64,11 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
         iv.setImageDrawable(app.icon);
 
         TextView tv = (TextView) v.findViewById(R.id.app_label);
-        SpannableStringBuilder ssb = new SpannableStringBuilder("(" + String.valueOf(app.uid) + ") ");
-        ssb.append(Utils.highlightQuery(mParams.query, app.label));
-        tv.setText(ssb);
-        // tv.setText(Utils.highlightQuery(mParams.query, app.label));
+        // SpannableStringBuilder ssb = new SpannableStringBuilder("(" +
+        // String.valueOf(app.uid) + ") ");
+        // ssb.append(Utils.highlightQuery(mParams.query, app.label));
+        // tv.setText(ssb);
+        tv.setText(Utils.highlightQuery(mParams.query, app.label));
 
         tv = (TextView) v.findViewById(R.id.last_update_time);
         String time = "-";
@@ -81,23 +81,33 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
         tv = (TextView) v.findViewById(R.id.app_package_name);
         tv.setText(Utils.highlightQuery(mParams.query, app.packageName));
 
-        Switch s = (Switch) v.findViewById(R.id.app_wifi);
-        s.setChecked(!app.disabledWifi);
-        s.setTag(app.uid);
-        // s.setEnabled(false);
-        s.setOnClickListener(this);
-
-        s = (Switch) v.findViewById(R.id.app_3g);
-        s.setChecked(!app.disabled3g);
-        s.setTag(app.uid);
-        // s.setEnabled(false);
-        s.setOnClickListener(this);
+        // Switch s = (Switch) v.findViewById(R.id.app_wifi);
+        // s.setChecked(!app.disabledWifi);
+        // s.setTag(app.uid);
+        // // s.setEnabled(false);
+        // s.setOnClickListener(this);
+        //
+        // s = (Switch) v.findViewById(R.id.app_3g);
+        // s.setChecked(!app.disabled3g);
+        // s.setTag(app.uid);
+        // // s.setEnabled(false);
+        // s.setOnClickListener(this);
 
         CompoundButton cb = (CompoundButton) v.findViewById(R.id.checkbox_wifi);
         cb.setChecked(!app.disabledWifi);
+        cb.setTag(position);
+        cb.setOnClickListener(this);
 
+        if ("com.google.android.location".equals(app.packageName)) {
+            Log.d("chk", "location : " + app.uid);
+        }
+        if ("com.google.android.gsf.login".equals(app.packageName)) {
+            Log.d("chk", "account : " + app.uid);
+        }
         cb = (CompoundButton) v.findViewById(R.id.checkbox_3g);
         cb.setChecked(!app.disabled3g);
+        cb.setTag(position);
+        cb.setOnClickListener(this);
         // ImageButton button = (ImageButton) v.findViewById(R.id.button);
         // TransitionDrawable drawable = (TransitionDrawable)
         // button.getDrawable();
@@ -108,25 +118,31 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
 
     @Override
     public void onClick(View v) {
-        Switch s = ((Switch) v);
-        String uid = v.getTag().toString();
+        CompoundButton cb = ((CompoundButton) v);
+        int position = Integer.parseInt(v.getTag().toString());
         int mode = Controller.NETWORK_MODE_WIFI;
-        if (v.getId() == R.id.app_wifi) {
+        if (v.getId() == R.id.checkbox_wifi) {
             mode = Controller.NETWORK_MODE_WIFI;
-        } else if (v.getId() == R.id.app_3g) {
+        } else if (v.getId() == R.id.checkbox_3g) {
             mode = Controller.NETWORK_MODE_3G;
         } else {
             throw new IllegalArgumentException("Unknow click.");
         }
 
-        AppInfo a = findAppInfoByUid(Integer.parseInt(uid));
+        AppInfo a = null;
+        if (position >= 0 && position < mAppList.size()) {
+            a = mAppList.get(position);
+        }
+        if (a == null) {
+            return;
+        }
 
         switch (mode) {
         case Controller.NETWORK_MODE_WIFI:
-                a.disabledWifi = !s.isChecked();
+            a.disabledWifi = !cb.isChecked();
                 break;
         case Controller.NETWORK_MODE_3G:
-                a.disabled3g = !s.isChecked();
+            a.disabled3g = !cb.isChecked();
                 break;
         default:
                 throw new IllegalArgumentException("Unknow network mode : " + mode);
@@ -135,7 +151,7 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
         Controller.handleApp(mContext, a, mode);
     }
 
-    private AppInfo findAppInfoByUid(int uid) {
+    public AppInfo findAppInfoByUid(int uid) {
         for (AppInfo a : mAppList) {
             if (a.uid == uid) {
                 return a;

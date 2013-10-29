@@ -17,7 +17,7 @@ public class WallCheckBoxDrawable extends Drawable {
     public static final int SIGNAL_WIFI = 0;
     public static final int SIGNAL_3G = 1;
     
-    private static final int DURATION = 100;
+    private static final int DURATION = 200;
     private static final int[] CHECKED_STATE_SET = { android.R.attr.state_checked };
     private static final int[] PRESSED_STATE_SET = { android.R.attr.state_pressed };
     private static final PropertyValuesHolder VALUE_HOLDER =
@@ -40,6 +40,8 @@ public class WallCheckBoxDrawable extends Drawable {
     private int mCurFrame = -1;
     private int mWidth;
     private int mHeight;
+    private int mSignalLeft;
+    private int mSignalTop;
     private ObjectAnimator mAnimator;
     private int[] mOldState;
     /** true if the drawable was recently pressed */
@@ -52,8 +54,8 @@ public class WallCheckBoxDrawable extends Drawable {
             sSignalWifi[1] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_2);
             sSignalWifi[2] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_3);
             sSignalWifi[3] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_4);
-            sSignalWifi[4] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_1);
-            sSignalWifi[5] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_2);
+            sSignalWifi[4] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_5);
+            sSignalWifi[5] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_6);
         }
         if (sSignal3g == null) {
             sSignal3g = new Bitmap[6];
@@ -61,8 +63,8 @@ public class WallCheckBoxDrawable extends Drawable {
             sSignal3g[1] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_2);
             sSignal3g[2] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_3);
             sSignal3g[3] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_4);
-            sSignal3g[4] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_1);
-            sSignal3g[5] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_2);
+            sSignal3g[4] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_5);
+            sSignal3g[5] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_6);
         }
         if (sWall == null) {
             sWall = new Bitmap[6];
@@ -86,6 +88,9 @@ public class WallCheckBoxDrawable extends Drawable {
 
         mWidth = sWall[0].getWidth();
         mHeight = sWall[0].getHeight();
+        mSignalLeft = (mWidth - mSignal[0].getWidth()) / 2;
+        mSignalTop = (mHeight - mSignal[0].getHeight()) / 2;
+
         mOldState = getState();
     }
 
@@ -94,9 +99,9 @@ public class WallCheckBoxDrawable extends Drawable {
         if (mCurFrame > -1 && mCurFrame < sWall.length) {
             canvas.drawBitmap(sWall[mCurFrame], 0, 0, sPaint);
         }
-        // if (mCurFrame > -1 && mCurFrame < mSignal.length) {
-        // canvas.drawBitmap(mSignal[mCurFrame], 0, 0, sPaint);
-        // }
+        if (mCurFrame > -1 && mCurFrame < mSignal.length) {
+            canvas.drawBitmap(mSignal[mCurFrame], mSignalLeft, mSignalTop, sPaint);
+        }
     }
 
     @Override

@@ -13,6 +13,13 @@
         android:checkable="true"
         android:checked="false" />
     <item
+        android:id="@+id/show_only_disabled"
+        android:orderInCategory="91"
+        android:showAsAction="never"
+        android:title="@string/action_show_only_disabled_app"
+        android:checkable="true"
+        android:checked="false" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:showAsAction="never"

@@ -19,6 +19,7 @@ public class ApplicationListLoader extends AsyncTaskLoader<ArrayList<AppInfo>> {
 
     public static class LoaderParams {
         public boolean showSysApps = false;
+        public boolean showOnlyDisabledApps = false;
         public String query;
     }
 
@@ -89,6 +90,13 @@ public class ApplicationListLoader extends AsyncTaskLoader<ArrayList<AppInfo>> {
                 continue;
             }
 
+            boolean disabledWifi = rejectedWifi.contains(uid);
+            boolean disabled3g = rejected3g.contains(uid);
+
+            if (mParams.showOnlyDisabledApps && !disabledWifi && !disabled3g) {
+                continue;
+            }
+
             String label = a.loadLabel(pm).toString();
             if (!TextUtils.isEmpty(mParams.query)) {
                 boolean hit = false;
@@ -108,8 +116,8 @@ public class ApplicationListLoader extends AsyncTaskLoader<ArrayList<AppInfo>> {
             }
 
             AppInfo app = new AppInfo(pm, a, label, p.lastUpdateTime);
-            app.disabledWifi = rejectedWifi.contains(uid);
-            app.disabled3g = rejected3g.contains(uid);
+            app.disabledWifi = disabledWifi;
+            app.disabled3g = disabled3g;
 
             appList.add(app);
         }
