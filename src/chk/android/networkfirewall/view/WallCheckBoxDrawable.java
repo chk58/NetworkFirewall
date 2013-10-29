@@ -24,11 +24,14 @@ public class WallCheckBoxDrawable extends Drawable {
             PropertyValuesHolder.ofKeyframe(
                     "Frame",
                     Keyframe.ofInt(0f, 0),
-                    Keyframe.ofInt(0.14f, 1),
-                    Keyframe.ofInt(0.30f, 2),
+                    Keyframe.ofInt(0.125f, 0),
+                    Keyframe.ofInt(0.25f, 1),
+                    Keyframe.ofInt(0.375f, 2),
                     Keyframe.ofInt(0.5f, 3),
-                    Keyframe.ofInt(0.72f, 4),
-                    Keyframe.ofInt(1f, 5)
+                    Keyframe.ofInt(0.625f, 4),
+                    Keyframe.ofInt(0.75f, 5),
+                    Keyframe.ofInt(0.875f, 6),
+                    Keyframe.ofInt(1f, 7)
                     );
 
     private static Paint sPaint = new Paint();
@@ -49,31 +52,37 @@ public class WallCheckBoxDrawable extends Drawable {
 
     public WallCheckBoxDrawable(Resources res, int signal) {
         if (sSignalWifi == null) {
-            sSignalWifi = new Bitmap[6];
+            sSignalWifi = new Bitmap[8];
             sSignalWifi[0] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_1);
             sSignalWifi[1] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_2);
             sSignalWifi[2] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_3);
             sSignalWifi[3] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_4);
             sSignalWifi[4] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_5);
             sSignalWifi[5] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_6);
+            sSignalWifi[6] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_6);
+            sSignalWifi[7] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_6);
         }
         if (sSignal3g == null) {
-            sSignal3g = new Bitmap[6];
+            sSignal3g = new Bitmap[8];
             sSignal3g[0] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_1);
             sSignal3g[1] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_2);
             sSignal3g[2] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_3);
             sSignal3g[3] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_4);
             sSignal3g[4] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_5);
             sSignal3g[5] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_6);
+            sSignal3g[6] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_6);
+            sSignal3g[7] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_6);
         }
         if (sWall == null) {
-            sWall = new Bitmap[6];
+            sWall = new Bitmap[8];
             sWall[0] = BitmapFactory.decodeResource(res, R.drawable.checkbox_wall_1);
             sWall[1] = BitmapFactory.decodeResource(res, R.drawable.checkbox_wall_2);
             sWall[2] = BitmapFactory.decodeResource(res, R.drawable.checkbox_wall_3);
             sWall[3] = BitmapFactory.decodeResource(res, R.drawable.checkbox_wall_4);
             sWall[4] = BitmapFactory.decodeResource(res, R.drawable.checkbox_wall_5);
             sWall[5] = BitmapFactory.decodeResource(res, R.drawable.checkbox_wall_6);
+            sWall[6] = BitmapFactory.decodeResource(res, R.drawable.checkbox_wall_7);
+            sWall[7] = BitmapFactory.decodeResource(res, R.drawable.checkbox_wall_8);
         }
         switch (signal) {
             case SIGNAL_WIFI:
