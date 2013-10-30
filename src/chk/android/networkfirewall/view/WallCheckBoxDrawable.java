@@ -59,8 +59,8 @@ public class WallCheckBoxDrawable extends Drawable {
             sSignalWifi[3] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_4);
             sSignalWifi[4] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_5);
             sSignalWifi[5] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_6);
-            sSignalWifi[6] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_6);
-            sSignalWifi[7] = BitmapFactory.decodeResource(res, R.drawable.signal_wifi_6);
+            sSignalWifi[6] = sSignalWifi[5];
+            sSignalWifi[7] = sSignalWifi[5];
         }
         if (sSignal3g == null) {
             sSignal3g = new Bitmap[8];
@@ -70,8 +70,8 @@ public class WallCheckBoxDrawable extends Drawable {
             sSignal3g[3] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_4);
             sSignal3g[4] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_5);
             sSignal3g[5] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_6);
-            sSignal3g[6] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_6);
-            sSignal3g[7] = BitmapFactory.decodeResource(res, R.drawable.signal_3g_6);
+            sSignal3g[6] = sSignal3g[5];
+            sSignal3g[7] = sSignal3g[5];
         }
         if (sWall == null) {
             sWall = new Bitmap[8];
@@ -92,7 +92,7 @@ public class WallCheckBoxDrawable extends Drawable {
                 mSignal = sSignal3g;
                 break;
             default:
-                throw new RuntimeException("Unknown signal type : " + signal);
+                throw new IllegalArgumentException("Unknown signal type : " + signal);
         }
 
         mWidth = sWall[0].getWidth();
@@ -130,17 +130,17 @@ public class WallCheckBoxDrawable extends Drawable {
 
     @Override
     public void setAlpha(int alpha) {
-        throw new RuntimeException("Unsupported : setAlpha");
+        throw new IllegalArgumentException("Unsupported : setAlpha");
     }
 
     @Override
     public void setColorFilter(ColorFilter cf) {
-        throw new RuntimeException("Unsupported : setColorFilter");
+        throw new IllegalArgumentException("Unsupported : setColorFilter");
     }
 
     @Override
     public int getOpacity() {
-        throw new RuntimeException("Unsupported : getOpacity");
+        throw new IllegalArgumentException("Unsupported : getOpacity");
     }
 
     @Override

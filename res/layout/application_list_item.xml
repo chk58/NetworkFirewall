@@ -33,7 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:lines="1"
-            android:visibility="gone"
+            android:visibility="visible"
             android:textSize="12sp" />
         <TextView android:id="@+id/app_package_name"
             android:layout_width="wrap_content"
@@ -56,12 +56,14 @@
             android:id="@+id/checkbox_wifi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/checkbox_background"
             android:paddingEnd="2dp"
             chk:signal="signal_wifi" />
         <chk.android.networkfirewall.view.WallCheckBox
             android:id="@+id/checkbox_3g"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/checkbox_background"
             chk:signal="signal_3g" />
     </LinearLayout>
 </RelativeLayout>

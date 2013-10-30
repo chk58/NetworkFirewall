@@ -37,11 +37,17 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
 
     @Override
     public int getCount() {
+        if (mAppList == null) {
+            return 0;
+        }
         return mAppList.size();
     }
 
     @Override
     public Object getItem(int position) {
+        if (mAppList == null) {
+            return null;
+        }
         return mAppList.get(position);
     }
 
@@ -50,8 +56,20 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
         return -1;
     }
 
+    public void setAppList(ArrayList<AppInfo> appList) {
+        mAppList = appList;
+        if (appList != null) {
+            notifyDataSetChanged();
+        } else {
+            notifyDataSetInvalidated();
+        }
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        if (mAppList == null) {
+            return null;
+        }
         View v;
         if (convertView != null) {
             v = convertView;
@@ -118,6 +136,9 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
 
     @Override
     public void onClick(View v) {
+        if (mAppList == null) {
+            return;
+        }
         CompoundButton cb = ((CompoundButton) v);
         int position = Integer.parseInt(v.getTag().toString());
         int mode = Controller.NETWORK_MODE_WIFI;

@@ -40,11 +40,6 @@ public class ApplicationListLoader extends AsyncTaskLoader<ArrayList<AppInfo>> {
     }
 
     @Override
-    public void deliverResult(ArrayList<AppInfo> data) {
-        super.deliverResult(data);
-    }
-
-    @Override
     protected void onStartLoading() {
         forceLoad();
     }

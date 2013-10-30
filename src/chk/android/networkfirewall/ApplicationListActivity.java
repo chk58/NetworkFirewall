@@ -34,6 +34,7 @@ public class ApplicationListActivity extends ListActivity implements
 
     private SearchController mSearchController;
     private ApplicationListLoader mLoader;
+    private ApplicationListAdapter mAdatper;
     private View mProgressBar;
     private PackageChangedObserver mObserver;
 
@@ -67,15 +68,31 @@ public class ApplicationListActivity extends ListActivity implements
         getContentResolver().registerContentObserver(Utils.NOTIFY_URI_PACAKGE_CHANGED, false,
                 mObserver);
         registerForContextMenu(getListView());
+        mAdatper = new ApplicationListAdapter(this, null, mParams);
+        setListAdapter(mAdatper);
         loadAppList();
     }
 
+    private void loadAppList() {
+        if (mLoader == null) {
+            LoaderManager lm = getLoaderManager();
+            lm.initLoader(LOADER_ID, null, this);
+        } else {
+            mLoader.onContentChanged();
+        }
+
+        mProgressBar.setVisibility(View.VISIBLE);
+    }
+    
     @Override
     protected void onDestroy() {
         if (mObserver != null) {
             getContentResolver().unregisterContentObserver(mObserver);
             mObserver = null;
         }
+        unregisterForContextMenu(getListView());
+        mLoader = null;
+        getLoaderManager().destroyLoader(LOADER_ID);
         super.onDestroy();
     }
 
@@ -182,18 +199,6 @@ public class ApplicationListActivity extends ListActivity implements
         return super.onOptionsItemSelected(item);
     }
 
-    private void loadAppList() {
-        if (mLoader == null) {
-            LoaderManager lm = getLoaderManager();
-            lm.initLoader(LOADER_ID, null, this);
-        } else {
-            mLoader.setLoaderParams(mParams);
-            mLoader.onContentChanged();
-        }
-
-        mProgressBar.setVisibility(View.VISIBLE);
-    }
-
     public void swtichSysApps(boolean show) {
         if (mParams.showSysApps != show) {
             mParams.showSysApps = show;
@@ -228,14 +233,13 @@ public class ApplicationListActivity extends ListActivity implements
     @Override
     public void onLoadFinished(Loader<ArrayList<AppInfo>> loader,
             ArrayList<AppInfo> data) {
-        setListAdapter(new ApplicationListAdapter(ApplicationListActivity.this,
-                data, mParams));
+        mAdatper.setAppList(data);
         mProgressBar.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onLoaderReset(Loader<ArrayList<AppInfo>> loader) {
-        setListAdapter(null);
+        mAdatper.setAppList(null);
         mLoader = null;
     }
 }

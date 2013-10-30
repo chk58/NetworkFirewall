@@ -27,7 +27,7 @@ public class FirewallProvider extends ContentProvider {
     private static int findMatch(Uri uri) {
         int match = sURIMatcher.match(uri);
         if (match < 0) {
-            throw new IllegalArgumentException("Unknown uri: " + uri);
+            throw new IllegalArgumentException("Unknown URI: " + uri);
         }
         return match;
     }
