@@ -15,5 +15,6 @@
         android:textStyle="bold"
         android:textColor="@android:color/holo_red_dark"
         android:text="@string/error_text_no_permission"
+        android:clickable="true"
         android:visibility="gone" />
 </FrameLayout>

@@ -21,13 +21,14 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Adapter;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.TextView;
 import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
 
 public class ApplicationListActivity extends ListActivity implements
-        LoaderCallbacks<ArrayList<AppInfo>> {
+        LoaderCallbacks<Object>, OnClickListener {
 
     private static final int LOADER_ID = 0;
     private static final int CONTEXT_MENU_APP_INFO = 0;
@@ -64,6 +65,7 @@ public class ApplicationListActivity extends ListActivity implements
         mProgressBar = getActionBar().getCustomView().findViewById(
                 R.id.progress_bar);
         mErrorText = (TextView) findViewById(R.id.error_text);
+        mErrorText.setOnClickListener(this);
         mSearchController = new SearchController(this);
 
         mObserver = new PackageChangedObserver();
@@ -78,7 +80,6 @@ public class ApplicationListActivity extends ListActivity implements
     private void loadAppList() {
         if (mLoader == null) {
             LoaderManager lm = getLoaderManager();
-            lm.enableDebugLogging(true);
             lm.initLoader(LOADER_ID, null, this);
         } else {
             mLoader.onContentChanged();
@@ -228,24 +229,35 @@ public class ApplicationListActivity extends ListActivity implements
     }
 
     @Override
-    public Loader<ArrayList<AppInfo>> onCreateLoader(int id, Bundle args) {
+    public Loader<Object> onCreateLoader(int id, Bundle args) {
         mLoader = new ApplicationListLoader(this, mParams);
         return mLoader;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void onLoadFinished(Loader<ArrayList<AppInfo>> loader,
-            ArrayList<AppInfo> data) {
-        if (data == null) {
+    public void onLoadFinished(Loader<Object> loader, Object data) {
+        ArrayList<AppInfo> appList = null;
+        if (data instanceof NoPermissionException) {
             mErrorText.setVisibility(View.VISIBLE);
+        } else if (data instanceof ArrayList<?>) {
+            appList = (ArrayList<AppInfo>) data;
+            mErrorText.setVisibility(View.GONE);
         }
-        mAdatper.setAppList(data);
+        mAdatper.setAppList(appList);
         mProgressBar.setVisibility(View.INVISIBLE);
     }
 
     @Override
-    public void onLoaderReset(Loader<ArrayList<AppInfo>> loader) {
+    public void onLoaderReset(Loader<Object> loader) {
         mAdatper.setAppList(null);
         mLoader = null;
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.error_text) {
+            loadAppList();
+        }
     }
 }
