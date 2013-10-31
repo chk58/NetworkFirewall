@@ -8,6 +8,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.text.TextUtils;
 import chk.android.networkfirewall.AppInfo;
+import chk.android.networkfirewall.NoPermissionException;
 import chk.android.networkfirewall.provider.NetworkFirewall;
 
 public class Controller {
@@ -28,18 +29,17 @@ public class Controller {
     private static final String ITFS_3G[] = { "rmnet+", "pdp+", "ppp+", "usb+", "ccmni+",
             "uwbr+", "wimax+", "vsnet+" };
 
-    public static boolean initIpTablesIfNecessary(Context context) {
+    public static boolean initIpTablesIfNecessary(Context context)
+            throws NoPermissionException {
         boolean result = false;
         final File file = new File(context.getCacheDir(), SCRIPT_FILE);
         StringBuilder sb = new StringBuilder();
         String[] r = new String[2];
 
-        ScriptRunner.runOnSameThread(file, "iptables -S " + CHAIN_NAME_OUTPUT,
-                r);
+        ScriptRunner.runOnSameThread(file, "iptables -S " + CHAIN_NAME_OUTPUT, r);
 
         if (TextUtils.isEmpty(r[0]) || !TextUtils.isEmpty(r[1])) {
-            // TODO need permission check
-            throw new RuntimeException("unable to run iptables");
+            throw new NoPermissionException();
         }
 
         if (!r[0].contains("-j " + MAIN_CHAIN_NAME)) {
@@ -100,7 +100,8 @@ public class Controller {
         return result;
     }
 
-    public static ArrayList<Integer> getAllRejectedApps(File file, int netMode) {
+    public static ArrayList<Integer> getAllRejectedApps(File file, int netMode)
+            throws NoPermissionException {
         ArrayList<Integer> list = new ArrayList<Integer>();
         String[] r = new String[2];
         StringBuilder sb = new StringBuilder();
@@ -117,6 +118,10 @@ public class Controller {
         }
 
         ScriptRunner.runOnSameThread(file, sb.toString(), r);
+
+        if (TextUtils.isEmpty(r[0]) || !TextUtils.isEmpty(r[1])) {
+            throw new NoPermissionException();
+        }
 
         if (!TextUtils.isEmpty(r[0])) {
             String[] array = r[0].split("\n");
@@ -138,7 +143,8 @@ public class Controller {
         return list;
     }
 
-    public static boolean checkRejected(File file, String uid, int netMode) {
+    public static boolean checkRejected(File file, String uid, int netMode)
+            throws NoPermissionException {
         boolean result = false;
         String[] r = new String[2];
         StringBuilder sb = new StringBuilder();
@@ -154,6 +160,11 @@ public class Controller {
             throw new IllegalArgumentException("Unknow network mode : " + netMode);
         }
         ScriptRunner.runOnSameThread(file, sb.toString(), r);
+
+        if (TextUtils.isEmpty(r[0]) || !TextUtils.isEmpty(r[1])) {
+            throw new NoPermissionException();
+        }
+
         if (!TextUtils.isEmpty(r[0])) {
             String[] array = r[0].split("\n");
             if (array.length > 1) {
@@ -168,7 +179,8 @@ public class Controller {
         return result;
     }
 
-    public static void handleApp(Context context, AppInfo app, int netMode) {
+    public static void handleApp(Context context, AppInfo app, int netMode)
+            throws NoPermissionException {
         final File file = new File(context.getCacheDir(), SCRIPT_FILE);
         boolean disable = false;
         switch (netMode) {
@@ -186,7 +198,7 @@ public class Controller {
     }
 
     public static void iptablesByUids(File file, String[] uids, boolean disable,
-            int netMode) {
+            int netMode) throws NoPermissionException {
         StringBuilder sb = new StringBuilder();
         String arg = disable ? " -A " : " -D ";
         String chain = null;

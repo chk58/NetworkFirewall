@@ -145,7 +145,7 @@ public class ScriptRunner extends Thread {
     }
 
     private static class ScriptCommand {
-        private final static boolean AS_ROOT = false;
+        private final static boolean AS_ROOT = true;
         private final File mFile;
         private final String mScript;
         private final String[] mResults;

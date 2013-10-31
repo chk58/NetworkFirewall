@@ -23,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.TextView;
 import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
 
 public class ApplicationListActivity extends ListActivity implements
@@ -36,6 +37,7 @@ public class ApplicationListActivity extends ListActivity implements
     private ApplicationListLoader mLoader;
     private ApplicationListAdapter mAdatper;
     private View mProgressBar;
+    private TextView mErrorText;
     private PackageChangedObserver mObserver;
 
     private class PackageChangedObserver extends ContentObserver {
@@ -61,7 +63,7 @@ public class ApplicationListActivity extends ListActivity implements
         getActionBar().setCustomView(R.layout.action_bar_custom_view);
         mProgressBar = getActionBar().getCustomView().findViewById(
                 R.id.progress_bar);
-
+        mErrorText = (TextView) findViewById(R.id.error_text);
         mSearchController = new SearchController(this);
 
         mObserver = new PackageChangedObserver();
@@ -76,11 +78,12 @@ public class ApplicationListActivity extends ListActivity implements
     private void loadAppList() {
         if (mLoader == null) {
             LoaderManager lm = getLoaderManager();
+            lm.enableDebugLogging(true);
             lm.initLoader(LOADER_ID, null, this);
         } else {
             mLoader.onContentChanged();
         }
-
+        mErrorText.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.VISIBLE);
     }
     
@@ -233,6 +236,9 @@ public class ApplicationListActivity extends ListActivity implements
     @Override
     public void onLoadFinished(Loader<ArrayList<AppInfo>> loader,
             ArrayList<AppInfo> data) {
+        if (data == null) {
+            mErrorText.setVisibility(View.VISIBLE);
+        }
         mAdatper.setAppList(data);
         mProgressBar.setVisibility(View.INVISIBLE);
     }

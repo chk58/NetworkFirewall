@@ -11,5 +11,6 @@
     <string name="checkbox_text_3g">Mobile data</string>
     <string name="search_hint">App/package name</string>
     <string name="context_menu_app_info">Application information</string>
+    <string name="error_text_no_permission">Permission denied!\nPlease ensure you phone has been rooted.\n\nClick to retry.</string>
 
 </resources>

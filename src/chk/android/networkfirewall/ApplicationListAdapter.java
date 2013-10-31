@@ -159,17 +159,21 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
         }
 
         switch (mode) {
-        case Controller.NETWORK_MODE_WIFI:
-            a.disabledWifi = !cb.isChecked();
+            case Controller.NETWORK_MODE_WIFI:
+                a.disabledWifi = !cb.isChecked();
                 break;
-        case Controller.NETWORK_MODE_3G:
-            a.disabled3g = !cb.isChecked();
+            case Controller.NETWORK_MODE_3G:
+                a.disabled3g = !cb.isChecked();
                 break;
-        default:
+            default:
                 throw new IllegalArgumentException("Unknow network mode : " + mode);
         }
 
-        Controller.handleApp(mContext, a, mode);
+        try {
+            Controller.handleApp(mContext, a, mode);
+        } catch (NoPermissionException e) {
+            Log.e(Utils.TAG, "Has no permission to run iptables");
+        }
     }
 
     public AppInfo findAppInfoByUid(int uid) {

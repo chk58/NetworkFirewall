@@ -27,7 +27,11 @@ public class Welcome extends Activity {
             @Override
             public void run() {
                 long time1 = System.currentTimeMillis();
-                Controller.initIpTablesIfNecessary(Welcome.this);
+                try {
+                    Controller.initIpTablesIfNecessary(Welcome.this);
+                } catch (NoPermissionException e) {
+                    Log.e(Utils.TAG, "Has no permission to run iptables");
+                }
                 long time2 = System.currentTimeMillis() - time1;
 
                 if (time2 < TIME) {

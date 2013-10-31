@@ -13,6 +13,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Process;
 import android.text.TextUtils;
+import android.util.Log;
 import chk.android.networkfirewall.controller.Controller;
 
 public class ApplicationListLoader extends AsyncTaskLoader<ArrayList<AppInfo>> {
@@ -54,70 +55,86 @@ public class ApplicationListLoader extends AsyncTaskLoader<ArrayList<AppInfo>> {
         cancelLoad();
     }
 
+    @Override
+    public void deliverResult(ArrayList<AppInfo> data) {
+        // TODO Auto-generated method stub
+        super.deliverResult(data);
+    }
+
     private ArrayList<AppInfo> createAppList() {
-        final ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
-        final PackageManager pm = getContext().getPackageManager();
-        final List<PackageInfo> list = pm
-                .getInstalledPackages(PackageManager.GET_GIDS);
-        final int myUid = getContext().getApplicationInfo().uid;
-        final File file = new File(getContext().getCacheDir(),
-                Controller.SCRIPT_FILE);
-        final ArrayList<Integer> rejectedWifi = Controller.getAllRejectedApps(file,
-                Controller.NETWORK_MODE_WIFI);
-        final ArrayList<Integer> rejected3g = Controller.getAllRejectedApps(file,
-                Controller.NETWORK_MODE_3G);
-        int uid;
-        for (PackageInfo p : list) {
-            ApplicationInfo a = p.applicationInfo;
-            if (a == null) {
-                continue;
-            }
-            uid = a.uid;
-            if (uid < Process.FIRST_APPLICATION_UID || uid == myUid) {
-                continue;
-            }
-
-            if (Utils.checkSystemApp(a) && !mParams.showSysApps) {
-                continue;
-            }
-
-            if (!Utils.checkNetWorkPermission(p)) {
-                continue;
-            }
-
-            boolean disabledWifi = rejectedWifi.contains(uid);
-            boolean disabled3g = rejected3g.contains(uid);
-
-            if (mParams.showOnlyDisabledApps && !disabledWifi && !disabled3g) {
-                continue;
-            }
-
-            String label = a.loadLabel(pm).toString();
-            if (!TextUtils.isEmpty(mParams.query)) {
-                boolean hit = false;
-                if (!TextUtils.isEmpty(label)
-                        && label.toLowerCase(Locale.ENGLISH).contains(
-                                mParams.query.toLowerCase(Locale.ENGLISH))) {
-                    hit = true;
-                }
-                if (!TextUtils.isEmpty(a.packageName)
-                        && a.packageName.toLowerCase(Locale.ENGLISH).contains(
-                                mParams.query.toLowerCase(Locale.ENGLISH))) {
-                    hit = true;
-                }
-                if (!hit) {
+        try {
+            final ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
+            final PackageManager pm = getContext().getPackageManager();
+            final List<PackageInfo> list = pm
+                    .getInstalledPackages(PackageManager.GET_GIDS);
+            final int myUid = getContext().getApplicationInfo().uid;
+            final File file = new File(getContext().getCacheDir(),
+                    Controller.SCRIPT_FILE);
+            final ArrayList<Integer> rejectedWifi = Controller
+                    .getAllRejectedApps(file,
+                    Controller.NETWORK_MODE_WIFI);
+            final ArrayList<Integer> rejected3g = Controller
+                    .getAllRejectedApps(file, Controller.NETWORK_MODE_3G);
+            int uid;
+            for (PackageInfo p : list) {
+                ApplicationInfo a = p.applicationInfo;
+                if (a == null) {
                     continue;
                 }
+                uid = a.uid;
+                if (uid < Process.FIRST_APPLICATION_UID || uid == myUid) {
+                    continue;
+                }
+
+                if (Utils.checkSystemApp(a) && !mParams.showSysApps) {
+                    continue;
+                }
+
+                if (!Utils.checkNetWorkPermission(p)) {
+                    continue;
+                }
+
+                boolean disabledWifi = rejectedWifi.contains(uid);
+                boolean disabled3g = rejected3g.contains(uid);
+
+                if (mParams.showOnlyDisabledApps && !disabledWifi
+                        && !disabled3g) {
+                    continue;
+                }
+
+                String label = a.loadLabel(pm).toString();
+                if (!TextUtils.isEmpty(mParams.query)) {
+                    boolean hit = false;
+                    if (!TextUtils.isEmpty(label)
+                            && label.toLowerCase(Locale.ENGLISH).contains(
+                                    mParams.query.toLowerCase(Locale.ENGLISH))) {
+                        hit = true;
+                    }
+                    if (!TextUtils.isEmpty(a.packageName)
+                            && a.packageName
+                                    .toLowerCase(Locale.ENGLISH)
+                                    .contains(
+                                            mParams.query
+                                                    .toLowerCase(Locale.ENGLISH))) {
+                        hit = true;
+                    }
+                    if (!hit) {
+                        continue;
+                    }
+                }
+
+                AppInfo app = new AppInfo(pm, a, label, p.lastUpdateTime);
+                app.disabledWifi = disabledWifi;
+                app.disabled3g = disabled3g;
+
+                appList.add(app);
             }
 
-            AppInfo app = new AppInfo(pm, a, label, p.lastUpdateTime);
-            app.disabledWifi = disabledWifi;
-            app.disabled3g = disabled3g;
-
-            appList.add(app);
+            Collections.sort(appList);
+            return appList;
+        } catch (NoPermissionException e) {
+            Log.e(Utils.TAG, "Has no permission to run iptables");
+            return null;
         }
-
-        Collections.sort(appList);
-        return appList;
     }
 }

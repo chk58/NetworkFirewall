@@ -2,6 +2,8 @@ package chk.android.networkfirewall.service;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.util.Log;
+import chk.android.networkfirewall.NoPermissionException;
 import chk.android.networkfirewall.Utils;
 import chk.android.networkfirewall.controller.Controller;
 import chk.android.networkfirewall.provider.NetworkFirewall;
@@ -21,7 +23,11 @@ public class FirewallService extends IntentService {
         }
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            Controller.initIpTablesIfNecessary(this);
+            try {
+                Controller.initIpTablesIfNecessary(this);
+            } catch (NoPermissionException e) {
+                Log.e(Utils.TAG, "Has no permission to run iptables");
+            }
             return;
         }
 
