@@ -10,6 +10,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.ContentObserver;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -73,6 +74,12 @@ public class ApplicationListActivity extends ListActivity implements
                 mObserver);
         registerForContextMenu(getListView());
         mAdatper = new ApplicationListAdapter(this, null, mParams);
+        mAdatper.registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onInvalidated() {
+                mErrorText.setVisibility(View.VISIBLE);
+            }
+        });
         setListAdapter(mAdatper);
         loadAppList();
     }
@@ -97,6 +104,7 @@ public class ApplicationListActivity extends ListActivity implements
         unregisterForContextMenu(getListView());
         mLoader = null;
         getLoaderManager().destroyLoader(LOADER_ID);
+        mAdatper.setAppList(null);
         super.onDestroy();
     }
 
@@ -239,6 +247,7 @@ public class ApplicationListActivity extends ListActivity implements
     public void onLoadFinished(Loader<Object> loader, Object data) {
         ArrayList<AppInfo> appList = null;
         if (data instanceof NoPermissionException) {
+            Log.e(Utils.TAG, "Has no permission to run iptables");
             mErrorText.setVisibility(View.VISIBLE);
         } else if (data instanceof ArrayList<?>) {
             appList = (ArrayList<AppInfo>) data;

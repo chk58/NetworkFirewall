@@ -11,6 +11,8 @@ public class AppInfo extends ApplicationInfo implements Comparable<AppInfo> {
     public long lastUpdateTime;
     public boolean disabledWifi = false;
     public boolean disabled3g = false;
+    public boolean processingWifi = false;
+    public boolean processing3g = false;
 
     public AppInfo(PackageManager pm, ApplicationInfo orig, String l,
             long lastUpdateTime) {

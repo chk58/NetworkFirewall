@@ -11,13 +11,15 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.util.StateSet;
+import android.view.animation.Animation;
 import chk.android.networkfirewall.R;
 
 public class WallCheckBoxDrawable extends Drawable {
     public static final int SIGNAL_WIFI = 0;
     public static final int SIGNAL_3G = 1;
-    
-    private static final int DURATION = 200;
+    public static final int[] PROCESSING_STATE_SET = { Integer.MAX_VALUE };
+
+    private static final int DURATION = 500;
     private static final int[] CHECKED_STATE_SET = { android.R.attr.state_checked };
     private static final int[] PRESSED_STATE_SET = { android.R.attr.state_pressed };
     private static final PropertyValuesHolder VALUE_HOLDER =
@@ -149,26 +151,24 @@ public class WallCheckBoxDrawable extends Drawable {
         if (state == null) {
             result = false;
         } else {
-            mWasRecentlyPressed = isPressed(state);
-            if (isChecked(state) && mOldState == null) {
-                setFrame(mSignal.length - 1);
+            // mWasRecentlyPressed = isPressed(state); else
+            if (isChecked(state) && isProcessing(state) && !isProcessing(mOldState)) {
+                start(false);
                 result = true;
-            } else if (!isChecked(state) && mOldState == null) {
-                setFrame(0);
-                result = true;
-            } else if (isChecked(state) && !isChecked(mOldState)
-                    && !mWasRecentlyPressed) {
-                setFrame(mSignal.length - 1);
-                result = true;
-            } else if (!isChecked(state) && isChecked(mOldState)
-                    && !mWasRecentlyPressed) {
-                setFrame(0);
-                result = true;
-            } else if (isChecked(state) && !isChecked(mOldState)) {
+            } else if (!isChecked(state) && isProcessing(state) && !isProcessing(mOldState)) {
                 start(true);
                 result = true;
+            } else if (isChecked(state) && mOldState == null) {
+                showOn();
+                result = true;
+            } else if (!isChecked(state) && mOldState == null) {
+                showOff();
+                result = true;
+            } else if (isChecked(state) && !isChecked(mOldState)) {
+                showOn();
+                result = true;
             } else if (!isChecked(state) && isChecked(mOldState)) {
-                start(false);
+                showOff();
                 result = true;
             }
         }
@@ -184,10 +184,54 @@ public class WallCheckBoxDrawable extends Drawable {
         return StateSet.stateSetMatches(PRESSED_STATE_SET, state);
     }
 
+    private boolean isProcessing(int[] state) {
+        return StateSet.stateSetMatches(PROCESSING_STATE_SET, state);
+    }
+
+    private void showOff() {
+        if (mAnimator == null || !mAnimator.isStarted()) {
+            setFrame(0);
+        } else {
+            // mAnimator.addListener(new AnimatorListener() {
+            //
+            // @Override
+            // public void onAnimationStart(Animator animation) {
+            //
+            // }
+            //
+            // @Override
+            // public void onAnimationRepeat(Animator animation) {
+            // mAnimator.removeAllListeners();
+            // mAnimator.end();
+            // }
+            //
+            // @Override
+            // public void onAnimationEnd(Animator animation) {
+            //
+            // }
+            //
+            // @Override
+            // public void onAnimationCancel(Animator animation) {
+            //
+            // }
+            // });
+            mAnimator.end();
+        }
+    }
+
+    private void showOn() {
+        if (mAnimator == null || !mAnimator.isStarted()) {
+            setFrame(mSignal.length - 1);
+        } else {
+            mAnimator.end();
+        }
+    }
+
     private void start(boolean offToOn) {
         if (mAnimator == null) {
             mAnimator = ObjectAnimator.ofPropertyValuesHolder(this, VALUE_HOLDER);
             mAnimator.setDuration(DURATION);
+            mAnimator.setRepeatCount(Animation.INFINITE);
         } else if (mAnimator.isStarted()) {
             mAnimator.cancel();
         }

@@ -1,31 +1,113 @@
 package chk.android.networkfirewall;
 
+import java.lang.ref.SoftReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
 import chk.android.networkfirewall.controller.Controller;
+import chk.android.networkfirewall.view.WallCheckBox;
+import chk.android.networkfirewall.view.WallCheckBox.OnStartProcessListener;
 
-public class ApplicationListAdapter extends BaseAdapter implements OnClickListener {
+public class ApplicationListAdapter extends BaseAdapter implements
+        OnStartProcessListener {
 
     @SuppressLint("SimpleDateFormat")
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final int MAIN_MSG_PROCESS_SUCCESSED = 0;
+    private static final int MAIN_MSG_PROCESS_FAILED = 1;
     private ArrayList<AppInfo> mAppList;
     private final Context mContext;
     private final LayoutInflater mInflater;
     private final LoaderParams mParams;
+
+    private MainHanlder mMainHanlder;
+    private ProcessHanlder mProcessHanlder;
+    private HandlerThread mProcessThread;
+
+    private static class MainHanlder extends Handler {
+        private SoftReference<ApplicationListAdapter> mReference;
+        private MainHanlder(ApplicationListAdapter adatper) {
+            mReference = new SoftReference<ApplicationListAdapter>(adatper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            ApplicationListAdapter adapter = mReference.get();
+            if (adapter == null)
+                return;
+
+            switch (msg.what) {
+            case MAIN_MSG_PROCESS_FAILED:
+                adapter.setAppList(null);
+                break;
+            case MAIN_MSG_PROCESS_SUCCESSED:
+                int mode = msg.arg1;
+                AppInfo app = (AppInfo) msg.obj;
+                if (adapter.mAppList == null || !adapter.mAppList.contains(app)) {
+                    return;
+                }
+                if (mode == Controller.NETWORK_MODE_WIFI) {
+                    app.processingWifi = false;
+                } else if (mode == Controller.NETWORK_MODE_3G) {
+                    app.processing3g = false;
+                }
+                adapter.notifyDataSetChanged();
+                break;
+            }
+        }
+    }
+
+    private static class ProcessHanlder extends Handler {
+        private SoftReference<ApplicationListAdapter> mReference;
+
+        private ProcessHanlder(ApplicationListAdapter adatper, Looper looper) {
+            super(looper);
+            mReference = new SoftReference<ApplicationListAdapter>(adatper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            ApplicationListAdapter adatper = mReference.get();
+            if (adatper == null)
+                return;
+
+            int mode = msg.arg1;
+            AppInfo app = (AppInfo) msg.obj;
+            Message main = new Message();
+            try {
+                Controller.handleApp(adatper.mContext, app, mode);
+                main.copyFrom(msg);
+                main.what = MAIN_MSG_PROCESS_SUCCESSED;
+            } catch (NoPermissionException e) {
+                main.what = MAIN_MSG_PROCESS_FAILED;
+                Log.e(Utils.TAG, "Has no permission to run iptables");
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            if (adatper.mMainHanlder != null) {
+                adatper.mMainHanlder.sendMessage(main);
+            }
+        }
+    }
 
     public ApplicationListAdapter(Context context, ArrayList<AppInfo> list,
             LoaderParams params) {
@@ -44,7 +126,7 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
     }
 
     @Override
-    public Object getItem(int position) {
+    public AppInfo getItem(int position) {
         if (mAppList == null) {
             return null;
         }
@@ -62,6 +144,12 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
             notifyDataSetChanged();
         } else {
             notifyDataSetInvalidated();
+            if (mProcessThread != null) {
+                mProcessThread.quit();
+            }
+            mProcessThread = null;
+            mMainHanlder = null;
+            mProcessHanlder = null;
         }
     }
 
@@ -111,21 +199,15 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
         // // s.setEnabled(false);
         // s.setOnClickListener(this);
 
-        CompoundButton cb = (CompoundButton) v.findViewById(R.id.checkbox_wifi);
-        cb.setChecked(!app.disabledWifi);
-        cb.setTag(position);
-        cb.setOnClickListener(this);
+        WallCheckBox checkBox = (WallCheckBox) v.findViewById(R.id.checkbox_wifi);
+        checkBox.setStatus(!app.disabledWifi, app.processingWifi);
+        checkBox.setTag(position);
+        checkBox.setOnStartProcessListener(this);
 
-        if ("com.google.android.location".equals(app.packageName)) {
-            Log.d("chk", "location : " + app.uid);
-        }
-        if ("com.google.android.gsf.login".equals(app.packageName)) {
-            Log.d("chk", "account : " + app.uid);
-        }
-        cb = (CompoundButton) v.findViewById(R.id.checkbox_3g);
-        cb.setChecked(!app.disabled3g);
-        cb.setTag(position);
-        cb.setOnClickListener(this);
+        checkBox = (WallCheckBox) v.findViewById(R.id.checkbox_3g);
+        checkBox.setStatus(!app.disabled3g, app.processing3g);
+        checkBox.setTag(position);
+        checkBox.setOnStartProcessListener(this);
         // ImageButton button = (ImageButton) v.findViewById(R.id.button);
         // TransitionDrawable drawable = (TransitionDrawable)
         // button.getDrawable();
@@ -135,53 +217,48 @@ public class ApplicationListAdapter extends BaseAdapter implements OnClickListen
     }
 
     @Override
-    public void onClick(View v) {
-        if (mAppList == null) {
-            return;
-        }
-        CompoundButton cb = ((CompoundButton) v);
-        int position = Integer.parseInt(v.getTag().toString());
-        int mode = Controller.NETWORK_MODE_WIFI;
-        if (v.getId() == R.id.checkbox_wifi) {
-            mode = Controller.NETWORK_MODE_WIFI;
-        } else if (v.getId() == R.id.checkbox_3g) {
-            mode = Controller.NETWORK_MODE_3G;
-        } else {
-            throw new IllegalArgumentException("Unknow click.");
+    public void OnStartProcess(WallCheckBox view) {
+        if (mMainHanlder == null) {
+            mMainHanlder = new MainHanlder(this);
         }
 
+        if (mProcessThread == null) {
+            mProcessThread = new HandlerThread("Process");
+            mProcessThread.start();
+            mProcessHanlder = new ProcessHanlder(this,
+                    mProcessThread.getLooper());
+        }
+
+        int position = Integer.parseInt(view.getTag().toString());
+        if (mAppList == null) {
+            mMainHanlder.obtainMessage(MAIN_MSG_PROCESS_FAILED).sendToTarget();
+            return;
+        }
         AppInfo a = null;
         if (position >= 0 && position < mAppList.size()) {
             a = mAppList.get(position);
         }
         if (a == null) {
+            mMainHanlder.obtainMessage(MAIN_MSG_PROCESS_FAILED).sendToTarget();
             return;
         }
 
-        switch (mode) {
-            case Controller.NETWORK_MODE_WIFI:
-                a.disabledWifi = !cb.isChecked();
-                break;
-            case Controller.NETWORK_MODE_3G:
-                a.disabled3g = !cb.isChecked();
-                break;
-            default:
-                throw new IllegalArgumentException("Unknow network mode : " + mode);
+        int mode;
+        if (view.getId() == R.id.checkbox_wifi) {
+            mode = Controller.NETWORK_MODE_WIFI;
+            a.processingWifi = true;
+            a.disabledWifi = !a.disabledWifi;
+        } else if (view.getId() == R.id.checkbox_3g) {
+            mode = Controller.NETWORK_MODE_3G;
+            a.processing3g = true;
+            a.disabled3g = !a.disabled3g;
+        } else {
+            throw new IllegalArgumentException("Unknow click.");
         }
 
-        try {
-            Controller.handleApp(mContext, a, mode);
-        } catch (NoPermissionException e) {
-            Log.e(Utils.TAG, "Has no permission to run iptables");
-        }
-    }
-
-    public AppInfo findAppInfoByUid(int uid) {
-        for (AppInfo a : mAppList) {
-            if (a.uid == uid) {
-                return a;
-            }
-        }
-        return null;
+        Message m = new Message();
+        m.obj = a;
+        m.arg1 = mode;
+        mProcessHanlder.sendMessage(m);
     }
 }
