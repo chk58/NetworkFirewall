@@ -63,8 +63,10 @@ public class ApplicationListAdapter extends BaseAdapter implements
                 }
                 if (mode == Controller.NETWORK_MODE_WIFI) {
                     app.processingWifi = false;
+                    app.disabledWifi = !app.disabledWifi;
                 } else if (mode == Controller.NETWORK_MODE_3G) {
                     app.processing3g = false;
+                    app.disabled3g = !app.disabled3g;
                 }
                 adapter.notifyDataSetChanged();
                 break;
@@ -87,7 +89,13 @@ public class ApplicationListAdapter extends BaseAdapter implements
                 return;
 
             int mode = msg.arg1;
-            AppInfo app = (AppInfo) msg.obj;
+            // we need a new AppInfo, since the process may delay
+            AppInfo app = new AppInfo((AppInfo) msg.obj);
+            if (mode == Controller.NETWORK_MODE_WIFI) {
+                app.disabledWifi = !app.disabledWifi;
+            } else if (mode == Controller.NETWORK_MODE_3G) {
+                app.disabled3g = !app.disabled3g;
+            }
             Message main = new Message();
             try {
                 Controller.handleApp(adatper.mContext, app, mode);
@@ -97,12 +105,12 @@ public class ApplicationListAdapter extends BaseAdapter implements
                 main.what = MAIN_MSG_PROCESS_FAILED;
                 Log.e(Utils.TAG, "Has no permission to run iptables");
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            // try {
+            // Thread.sleep(3000);
+            // } catch (InterruptedException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // }
             if (adatper.mMainHanlder != null) {
                 adatper.mMainHanlder.sendMessage(main);
             }
@@ -139,17 +147,18 @@ public class ApplicationListAdapter extends BaseAdapter implements
     }
 
     public void setAppList(ArrayList<AppInfo> appList) {
+        if (mProcessThread != null) {
+            mProcessThread.quit();
+        }
+        mProcessThread = null;
+        mMainHanlder = null;
+        mProcessHanlder = null;
+
         mAppList = appList;
         if (appList != null) {
             notifyDataSetChanged();
         } else {
             notifyDataSetInvalidated();
-            if (mProcessThread != null) {
-                mProcessThread.quit();
-            }
-            mProcessThread = null;
-            mMainHanlder = null;
-            mProcessHanlder = null;
         }
     }
 
@@ -247,11 +256,9 @@ public class ApplicationListAdapter extends BaseAdapter implements
         if (view.getId() == R.id.checkbox_wifi) {
             mode = Controller.NETWORK_MODE_WIFI;
             a.processingWifi = true;
-            a.disabledWifi = !a.disabledWifi;
         } else if (view.getId() == R.id.checkbox_3g) {
             mode = Controller.NETWORK_MODE_3G;
             a.processing3g = true;
-            a.disabled3g = !a.disabled3g;
         } else {
             throw new IllegalArgumentException("Unknow click.");
         }

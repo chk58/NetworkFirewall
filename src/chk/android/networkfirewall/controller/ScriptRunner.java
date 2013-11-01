@@ -201,8 +201,9 @@ public class ScriptRunner extends Thread {
                     }
                     execCode = p.waitFor();
                 } catch (IOException e1) {
-                    throw new RuntimeException(e1);
+                    mResults[1] = e1.toString();
                 } catch (InterruptedException e2) {
+                    mResults[1] = e2.toString();
                 } finally {
                     if (p != null) {
                         p.destroy();
