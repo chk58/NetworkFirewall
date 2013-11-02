@@ -106,7 +106,7 @@ public class ApplicationListAdapter extends BaseAdapter implements
                 Log.e(Utils.TAG, "Has no permission to run iptables");
             }
             // try {
-            // Thread.sleep(3000);
+            // Thread.sleep(1000);
             // } catch (InterruptedException e) {
             // // TODO Auto-generated catch block
             // e.printStackTrace();

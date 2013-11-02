@@ -21,7 +21,6 @@ public class WallCheckBoxDrawable extends Drawable {
 
     private static final int DURATION = 200;
     private static final int[] CHECKED_STATE_SET = { android.R.attr.state_checked };
-    private static final int[] PRESSED_STATE_SET = { android.R.attr.state_pressed };
     private static final PropertyValuesHolder VALUE_HOLDER_OFF_TO_ON =
             PropertyValuesHolder.ofKeyframe(
                     "Frame",
@@ -33,8 +32,7 @@ public class WallCheckBoxDrawable extends Drawable {
                     Keyframe.ofInt(0.625f, 4),
                     Keyframe.ofInt(0.75f, 5),
                     Keyframe.ofInt(0.875f, 6),
-                    Keyframe.ofInt(1f, 7)
-                    );
+                    Keyframe.ofInt(1f, 7));
     private static final PropertyValuesHolder VALUE_HOLDER_ON_TO_OFF =
             PropertyValuesHolder.ofKeyframe(
                     "Frame",
@@ -46,8 +44,7 @@ public class WallCheckBoxDrawable extends Drawable {
                     Keyframe.ofInt(0.625f, 3),
                     Keyframe.ofInt(0.75f, 2),
                     Keyframe.ofInt(0.875f, 1),
-                    Keyframe.ofInt(1f, 0)
-                    );
+                    Keyframe.ofInt(1f, 0));
 
     private static Paint sPaint = new Paint();
     private static Bitmap[] sSignalWifi;
@@ -61,9 +58,7 @@ public class WallCheckBoxDrawable extends Drawable {
     private int mSignalLeft;
     private int mSignalTop;
     private ObjectAnimator mAnimator;
-    private int[] mOldState;
-    /** true if the drawable was recently pressed */
-    private boolean mWasRecentlyPressed;
+    private boolean mIsProcessing;
 
     public WallCheckBoxDrawable(Resources res, int signal) {
         if (sSignalWifi == null) {
@@ -114,8 +109,6 @@ public class WallCheckBoxDrawable extends Drawable {
         mHeight = sWall[0].getHeight();
         mSignalLeft = (mWidth - mSignal[0].getWidth()) / 2;
         mSignalTop = (mHeight - mSignal[0].getHeight()) / 2;
-
-        mOldState = getState();
     }
 
     @Override
@@ -164,31 +157,29 @@ public class WallCheckBoxDrawable extends Drawable {
         if (state == null) {
             result = false;
         } else {
-            // mWasRecentlyPressed = isPressed(state); else
-            if (isChecked(state) && isProcessing(state)) {
+            if (isChecked(state) && isProcessing(state) && !mIsProcessing) {
+                mIsProcessing = true;
                 start(false);
                 result = true;
-            } else if (!isChecked(state) && isProcessing(state)) {
+            } else if (!isChecked(state) && isProcessing(state) && !mIsProcessing) {
+                mIsProcessing = true;
                 start(true);
                 result = true;
-            } else if (isChecked(state)) {
+            } else if (isChecked(state) && !isProcessing(state)) {
+                mIsProcessing = false;
                 showOn();
                 result = true;
-            } else if (!isChecked(state)) {
+            } else if (!isChecked(state) && !isProcessing(state)) {
+                mIsProcessing = false;
                 showOff();
                 result = true;
             }
         }
-        mOldState = state;
         return result;
     }
 
     private boolean isChecked(int[] state) {
         return StateSet.stateSetMatches(CHECKED_STATE_SET, state);
-    }
-
-    private boolean isPressed(int[] state) {
-        return StateSet.stateSetMatches(PRESSED_STATE_SET, state);
     }
 
     private boolean isProcessing(int[] state) {
@@ -211,18 +202,18 @@ public class WallCheckBoxDrawable extends Drawable {
 
     private void start(boolean offToOn) {
         PropertyValuesHolder values = offToOn ? VALUE_HOLDER_OFF_TO_ON : VALUE_HOLDER_ON_TO_OFF;
-        if (mAnimator != null && mAnimator.isStarted()) {
+        if (mAnimator == null) {
+            mAnimator = ObjectAnimator.ofPropertyValuesHolder(this, values);
+            mAnimator.setDuration(DURATION);
+            mAnimator.setRepeatCount(Animation.INFINITE);
+        } else {
             mAnimator.cancel();
+            mAnimator.setValues(values);
         }
-        mAnimator = ObjectAnimator.ofPropertyValuesHolder(this, values);
-        mAnimator.setDuration(DURATION);
-        mAnimator.setRepeatCount(Animation.INFINITE);
-
         mAnimator.start();
     }
 
     public void setFrame(int frame) {
-        mWasRecentlyPressed = false;
         if (mCurFrame == frame || frame >= mSignal.length) {
             return;
         }
