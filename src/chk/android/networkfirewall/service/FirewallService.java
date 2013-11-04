@@ -36,7 +36,11 @@ public class FirewallService extends IntentService {
             String packageName = intent.getData().getEncodedSchemeSpecificPart();
             int uid = NetworkFirewall.findUidByPackageName(this, packageName);
             if (uid > 0) {
-                Controller.deleteAppInfo(this, String.valueOf(uid));
+                try {
+                    Controller.deleteAppInfo(this, String.valueOf(uid));
+                } catch (NoPermissionException e) {
+                    Log.e(Utils.TAG, "Has no permission to run iptables");
+                }
             }
             getContentResolver().notifyChange(Utils.NOTIFY_URI_PACAKGE_CHANGED, null);
             return;

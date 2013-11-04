@@ -73,7 +73,8 @@ public class Controller {
                         + " -j " + REJECT_CHAIN_NAME_3G + "\n");
             }
 
-            ScriptRunner.runOnSameThread(file, sb.toString());
+            r = new String[2];
+            ScriptRunner.runOnSameThread(file, sb.toString(), r);
 
             Cursor c = null;
             try {
@@ -221,11 +222,17 @@ public class Controller {
             sb.append(" -m owner --uid-owner ").append(uid)
                     .append(" -j REJECT \n");
         }
+        String[] r = new String[2];
         if (sb.length() > 0)
-            ScriptRunner.runOnSameThread(file, sb.toString());
+            ScriptRunner.runOnSameThread(file, sb.toString(), r);
+
+        if (!TextUtils.isEmpty(r[1])) {
+            throw new NoPermissionException();
+        }
     }
 
-    public static void deleteAppInfo(Context context, String uid) {
+    public static void deleteAppInfo(Context context, String uid)
+            throws NoPermissionException {
         NetworkFirewall.deleteByUid(context, uid);
         final File file = new File(context.getCacheDir(), SCRIPT_FILE);
 
@@ -235,6 +242,10 @@ public class Controller {
         sb.append("iptables -D " + REJECT_CHAIN_NAME_3G);
         sb.append(" -m owner --uid-owner ").append(uid).append(" -j REJECT \n");
 
-        ScriptRunner.runOnSameThread(file, sb.toString());
+        String[] r = new String[2];
+        ScriptRunner.runOnSameThread(file, sb.toString(), r);
+        if (!TextUtils.isEmpty(r[1])) {
+            throw new NoPermissionException();
+        }
     }
 }

@@ -135,9 +135,9 @@ public class ScriptRunner extends Thread {
         }
     }
 
-    public static void runOnSameThread(File file, String script) {
-        runOnSameThread(file, script, null);
-    }
+    // public static void runOnSameThread(File file, String script) {
+    // runOnSameThread(file, script, null);
+    // }
 
     public static int runOnSameThread(File file, String script,
             String[] resultInfo) {
@@ -146,6 +146,7 @@ public class ScriptRunner extends Thread {
 
     private static class ScriptCommand {
         private final static boolean AS_ROOT = true;
+        private final static byte[] sLock = new byte[0];
         private final File mFile;
         private final String mScript;
         private final String[] mResults;
@@ -157,7 +158,7 @@ public class ScriptRunner extends Thread {
         }
 
         public int run() {
-            synchronized (mFile) {
+            synchronized (sLock) {
                 BufferedReader r = null;
                 BufferedReader e = null;
                 OutputStreamWriter fileOut = null;
@@ -201,9 +202,9 @@ public class ScriptRunner extends Thread {
                     }
                     execCode = p.waitFor();
                 } catch (IOException e1) {
-                    mResults[1] = e1.toString();
+                    throw new RuntimeException(e1);
                 } catch (InterruptedException e2) {
-                    mResults[1] = e2.toString();
+                    throw new RuntimeException(e2);
                 } finally {
                     if (p != null) {
                         p.destroy();
