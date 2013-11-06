@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
+import chk.android.networkfirewall.Utils;
 
 public class ScriptRunner extends Thread {
 
@@ -202,7 +204,8 @@ public class ScriptRunner extends Thread {
                     }
                     execCode = p.waitFor();
                 } catch (IOException e1) {
-                    throw new RuntimeException(e1);
+                    Log.e(Utils.TAG, e1.toString());
+                    mResults[1] = e1.toString();
                 } catch (InterruptedException e2) {
                     throw new RuntimeException(e2);
                 } finally {

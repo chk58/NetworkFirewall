@@ -13,6 +13,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Process;
 import android.text.TextUtils;
+import android.util.Log;
 import chk.android.networkfirewall.controller.Controller;
 
 public class ApplicationListLoader extends AsyncTaskLoader<Object> {
@@ -59,10 +60,17 @@ public class ApplicationListLoader extends AsyncTaskLoader<Object> {
     }
 
     private ArrayList<AppInfo> createAppList() throws NoPermissionException {
-        final ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
+
         final PackageManager pm = getContext().getPackageManager();
-        final List<PackageInfo> list = pm
-                .getInstalledPackages(PackageManager.GET_GIDS);
+        List<PackageInfo> list = null;
+        try {
+            list = pm.getInstalledPackages(PackageManager.GET_GIDS);
+        } catch (Exception e) {
+            Log.e(Utils.TAG, e.toString());
+            return null;
+        }
+
+        final ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
         final int myUid = getContext().getApplicationInfo().uid;
         final File file = new File(getContext().getCacheDir(),
                 Controller.SCRIPT_FILE);

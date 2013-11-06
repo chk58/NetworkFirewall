@@ -26,7 +26,8 @@ public class FirewallService extends IntentService {
             try {
                 Controller.initIpTablesIfNecessary(this);
             } catch (NoPermissionException e) {
-                Log.e(Utils.TAG, "Has no permission to run iptables");
+                Log.e(Utils.TAG,
+                        "Has no permission to run iptables : " + e.toString());
             }
             return;
         }

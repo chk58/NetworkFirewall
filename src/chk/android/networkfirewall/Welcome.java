@@ -30,7 +30,9 @@ public class Welcome extends Activity {
                 try {
                     Controller.initIpTablesIfNecessary(Welcome.this);
                 } catch (NoPermissionException e) {
-                    Log.e(Utils.TAG, "Has no permission to run iptables");
+                    Log.e(Utils.TAG,
+                            "Has no permission to run iptables : "
+                                    + e.toString());
                 }
                 long time2 = System.currentTimeMillis() - time1;
 

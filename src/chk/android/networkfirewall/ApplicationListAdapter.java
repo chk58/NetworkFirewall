@@ -103,12 +103,12 @@ public class ApplicationListAdapter extends BaseAdapter implements
                 main.what = MAIN_MSG_PROCESS_SUCCESSED;
             } catch (NoPermissionException e) {
                 main.what = MAIN_MSG_PROCESS_FAILED;
-                Log.e(Utils.TAG, "Has no permission to run iptables");
+                Log.e(Utils.TAG,
+                        "Has no permission to run iptables : " + e.toString());
             }
             // try {
             // Thread.sleep(1000);
             // } catch (InterruptedException e) {
-            // // TODO Auto-generated catch block
             // e.printStackTrace();
             // }
             if (adatper.mMainHanlder != null) {
@@ -164,14 +164,14 @@ public class ApplicationListAdapter extends BaseAdapter implements
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (mAppList == null || position < 0 || position >= mAppList.size()) {
-            return null;
-        }
         View v;
         if (convertView != null) {
             v = convertView;
         } else {
             v = mInflater.inflate(R.layout.application_list_item, null);
+        }
+        if (mAppList == null || position < 0 || position >= mAppList.size()) {
+            return v;
         }
 
         AppInfo app = mAppList.get(position);

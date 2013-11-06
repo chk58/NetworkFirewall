@@ -247,7 +247,8 @@ public class ApplicationListActivity extends ListActivity implements
     public void onLoadFinished(Loader<Object> loader, Object data) {
         ArrayList<AppInfo> appList = null;
         if (data instanceof NoPermissionException) {
-            Log.e(Utils.TAG, "Has no permission to run iptables");
+            Log.e(Utils.TAG,
+                    "Has no permission to run iptables : " + data.toString());
             mErrorText.setVisibility(View.VISIBLE);
         } else if (data instanceof ArrayList<?>) {
             appList = (ArrayList<AppInfo>) data;

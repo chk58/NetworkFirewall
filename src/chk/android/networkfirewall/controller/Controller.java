@@ -39,7 +39,7 @@ public class Controller {
         ScriptRunner.runOnSameThread(file, "iptables -S " + CHAIN_NAME_OUTPUT, r);
 
         if (TextUtils.isEmpty(r[0]) || !TextUtils.isEmpty(r[1])) {
-            throw new NoPermissionException();
+            throw new NoPermissionException(r[1]);
         }
 
         if (!r[0].contains("-j " + MAIN_CHAIN_NAME)) {
@@ -121,7 +121,7 @@ public class Controller {
         ScriptRunner.runOnSameThread(file, sb.toString(), r);
 
         if (TextUtils.isEmpty(r[0]) || !TextUtils.isEmpty(r[1])) {
-            throw new NoPermissionException();
+            throw new NoPermissionException(r[1]);
         }
 
         if (!TextUtils.isEmpty(r[0])) {
@@ -163,7 +163,7 @@ public class Controller {
         ScriptRunner.runOnSameThread(file, sb.toString(), r);
 
         if (TextUtils.isEmpty(r[0]) || !TextUtils.isEmpty(r[1])) {
-            throw new NoPermissionException();
+            throw new NoPermissionException(r[1]);
         }
 
         if (!TextUtils.isEmpty(r[0])) {
@@ -227,7 +227,7 @@ public class Controller {
             ScriptRunner.runOnSameThread(file, sb.toString(), r);
 
         if (!TextUtils.isEmpty(r[1])) {
-            throw new NoPermissionException();
+            throw new NoPermissionException(r[1]);
         }
     }
 
@@ -245,7 +245,7 @@ public class Controller {
         String[] r = new String[2];
         ScriptRunner.runOnSameThread(file, sb.toString(), r);
         if (!TextUtils.isEmpty(r[1])) {
-            throw new NoPermissionException();
+            throw new NoPermissionException(r[1]);
         }
     }
 }
