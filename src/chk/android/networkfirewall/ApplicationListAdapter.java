@@ -135,7 +135,7 @@ public class ApplicationListAdapter extends BaseAdapter implements
 
     @Override
     public AppInfo getItem(int position) {
-        if (mAppList == null) {
+        if (mAppList == null || position < 0 || position >= mAppList.size()) {
             return null;
         }
         return mAppList.get(position);
@@ -164,7 +164,7 @@ public class ApplicationListAdapter extends BaseAdapter implements
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (mAppList == null) {
+        if (mAppList == null || position < 0 || position >= mAppList.size()) {
             return null;
         }
         View v;
