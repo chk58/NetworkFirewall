@@ -7,135 +7,133 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.text.TextUtils;
 import android.util.Log;
+import chk.android.networkfirewall.MyApplication;
 import chk.android.networkfirewall.Utils;
 
 public class ScriptRunner extends Thread {
 
-    public interface ScriptListener {
-        public void onStarted();
+    // public interface ScriptListener {
+    // public void onStarted();
+    //
+    // public void onSucceeded(String result);
+    //
+    // public void onFailed(String error);
+    // }
 
-        public void onSucceeded(String result);
+    // private final String mScript;
+    // private final long mTimeout;
+    // private final File mCacheFile;
+    // private final Handler mHandler;
+    // private InternalRunner mRunner;
+    //
+    // public ScriptRunner(File file, String script) {
+    // this(file, script, 0, null);
+    // }
 
-        public void onFailed(String error);
-    }
-
-    private final String mScript;
-    private final long mTimeout;
-    private final File mCacheFile;
-    private final Handler mHandler;
-    private InternalRunner mRunner;
-
-    public ScriptRunner(File file, String script) {
-        this(file, script, 0, null);
-    }
-
-    public ScriptRunner(File file, String script, ScriptListener l) {
-        this(file, script, 0, l);
-    }
-
-    public ScriptRunner(File file, String script, long timeout, ScriptListener l) {
-        mScript = script;
-        mTimeout = timeout;
-        mCacheFile = file;
-        mHandler = new MainHandler(l);
-    }
-
-    @Override
-    public void run() {
-        String execResult = null;
-        String execError = null;
-        int exitValue = 1;
-        try {
-            mRunner = new InternalRunner();
-            mRunner.start();
-
-            if (mTimeout > 0) {
-                mRunner.join(mTimeout);
-            } else {
-                mRunner.join();
-            }
-
-            if (mRunner.isAlive()) {
-                // Timed-out
-                mRunner.interrupt();
-                execError = "Timed-out";
-            } else {
-                execResult = mRunner.mExecResult;
-                execError = mRunner.mExecError;
-                exitValue = mRunner.mExitValue;
-            }
-
-        } catch (InterruptedException e) {
-            execError = e.toString();
-        } finally {
-            Message.obtain(mHandler, MainHandler.WHAT_FINISHED, exitValue, -1,
-                    new String[] { execResult, execError }).sendToTarget();
-        }
-    }
-
-    @Override
-    public synchronized void start() {
-        Message.obtain(mHandler, MainHandler.WHAT_STARTED).sendToTarget();
-        super.start();
-    }
-
-    @Override
-    public void interrupt() {
-        if (mRunner != null) {
-            mRunner.interrupt();
-            mRunner = null;
-        }
-        super.interrupt();
-    }
-
-    private static class MainHandler extends Handler {
-        private static final int WHAT_STARTED = 1;
-        private static final int WHAT_FINISHED = 2;
-        private ScriptListener mListener;
-
-        public MainHandler(ScriptListener l) {
-            super(Looper.getMainLooper());
-            mListener = l;
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            if (mListener != null) {
-                switch (msg.what) {
-                case WHAT_STARTED:
-                    mListener.onStarted();
-                    break;
-                case WHAT_FINISHED:
-                    String[] r = (String[]) msg.obj;
-                    if (!TextUtils.isEmpty(r[1])) {
-                        mListener.onFailed(r[1]);
-                    } else {
-                        mListener.onSucceeded(r[0]);
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    private class InternalRunner extends Thread {
-        private String mExecResult;
-        private String mExecError;
-        private int mExitValue = -1;
-
-        @Override
-        public void run() {
-            String[] r = new String[2];
-            mExitValue = new ScriptCommand(mCacheFile, mScript, r).run();
-            mExecResult = r[0];
-            mExecError = r[1];
-        }
-    }
+    // public ScriptRunner(File file, String script, ScriptListener l) {
+    // this(file, script, 0, l);
+    // }
+    //
+    // public ScriptRunner(File file, String script, long timeout,
+    // ScriptListener l) {
+    // mScript = script;
+    // mTimeout = timeout;
+    // mCacheFile = file;
+    // mHandler = new MainHandler(l);
+    // }
+    //
+    // @Override
+    // public void run() {
+    // String execResult = null;
+    // String execError = null;
+    // int exitValue = 1;
+    // try {
+    // mRunner = new InternalRunner();
+    // mRunner.start();
+    //
+    // if (mTimeout > 0) {
+    // mRunner.join(mTimeout);
+    // } else {
+    // mRunner.join();
+    // }
+    //
+    // if (mRunner.isAlive()) {
+    // // Timed-out
+    // mRunner.interrupt();
+    // execError = "Timed-out";
+    // } else {
+    // execResult = mRunner.mExecResult;
+    // execError = mRunner.mExecError;
+    // exitValue = mRunner.mExitValue;
+    // }
+    //
+    // } catch (InterruptedException e) {
+    // execError = e.toString();
+    // } finally {
+    // Message.obtain(mHandler, MainHandler.WHAT_FINISHED, exitValue, -1,
+    // new String[] { execResult, execError }).sendToTarget();
+    // }
+    // }
+    //
+    // @Override
+    // public synchronized void start() {
+    // Message.obtain(mHandler, MainHandler.WHAT_STARTED).sendToTarget();
+    // super.start();
+    // }
+    //
+    // @Override
+    // public void interrupt() {
+    // if (mRunner != null) {
+    // mRunner.interrupt();
+    // mRunner = null;
+    // }
+    // super.interrupt();
+    // }
+    //
+    // private static class MainHandler extends Handler {
+    // private static final int WHAT_STARTED = 1;
+    // private static final int WHAT_FINISHED = 2;
+    // private ScriptListener mListener;
+    //
+    // public MainHandler(ScriptListener l) {
+    // super(Looper.getMainLooper());
+    // mListener = l;
+    // }
+    //
+    // @Override
+    // public void handleMessage(Message msg) {
+    // if (mListener != null) {
+    // switch (msg.what) {
+    // case WHAT_STARTED:
+    // mListener.onStarted();
+    // break;
+    // case WHAT_FINISHED:
+    // String[] r = (String[]) msg.obj;
+    // if (!TextUtils.isEmpty(r[1])) {
+    // mListener.onFailed(r[1]);
+    // } else {
+    // mListener.onSucceeded(r[0]);
+    // }
+    // break;
+    // }
+    // }
+    // }
+    // }
+    //
+    // private class InternalRunner extends Thread {
+    // private String mExecResult;
+    // private String mExecError;
+    // private int mExitValue = -1;
+    //
+    // @Override
+    // public void run() {
+    // String[] r = new String[2];
+    // mExitValue = new ScriptCommand(mCacheFile, mScript, r).run();
+    // mExecResult = r[0];
+    // mExecError = r[1];
+    // }
+    // }
 
     // public static void runOnSameThread(File file, String script) {
     // runOnSameThread(file, script, null);
@@ -147,7 +145,6 @@ public class ScriptRunner extends Thread {
     }
 
     private static class ScriptCommand {
-        private final static boolean AS_ROOT = true;
         private final static byte[] sLock = new byte[0];
         private final File mFile;
         private final String mScript;
@@ -190,7 +187,7 @@ public class ScriptRunner extends Thread {
                     fileOut.flush();
                     fileOut.close();
 
-                    if (AS_ROOT) {
+                    if (MyApplication.sAsRoot) {
                         p = Runtime.getRuntime().exec("su -c " + abspath);
                     } else {
                         p = Runtime.getRuntime().exec("sh " + abspath);
