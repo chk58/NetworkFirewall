@@ -207,6 +207,14 @@ public class ApplicationListActivity extends ListActivity implements
         case R.id.search:
             mSearchController.showSearchBar();
             return true;
+        case R.id.action_show_app_ops:
+            Intent intent = new Intent("android.settings.APP_OPS_SETTINGS");
+            try {
+                startActivity(intent);
+            } catch (ActivityNotFoundException e) {
+                Log.e(Utils.TAG, "APP_OPS_SETTINGS not found!");
+            }
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
