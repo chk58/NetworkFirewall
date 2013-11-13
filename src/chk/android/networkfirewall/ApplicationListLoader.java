@@ -14,6 +14,8 @@ import android.content.pm.PackageManager;
 import android.os.Process;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SparseArray;
+import chk.android.networkfirewall.AppInfo.AppInfoListUid;
 import chk.android.networkfirewall.controller.Controller;
 
 public class ApplicationListLoader extends AsyncTaskLoader<Object> {
@@ -71,6 +73,7 @@ public class ApplicationListLoader extends AsyncTaskLoader<Object> {
         }
 
         final ArrayList<AppInfo> appList = new ArrayList<AppInfo>();
+        final SparseArray<AppInfo> appMap = new SparseArray<AppInfo>();
         final int myUid = getContext().getApplicationInfo().uid;
         final File file = new File(getContext().getCacheDir(),
                 Controller.SCRIPT_FILE);
@@ -131,7 +134,21 @@ public class ApplicationListLoader extends AsyncTaskLoader<Object> {
             app.disabledWifi = disabledWifi;
             app.disabled3g = disabled3g;
 
-            appList.add(app);
+            AppInfo appUid = appMap.get(uid);
+            if (appUid == null) {
+                appMap.put(uid, app);
+            } else if (appUid instanceof AppInfoListUid) {
+                ((AppInfoListUid) appUid).add(app);
+            } else {
+                AppInfoListUid uidList = new AppInfoListUid(uid);
+                uidList.add(appUid);
+                uidList.add(app);
+                appMap.put(uid, uidList);
+            }
+        }
+
+        for (int i = 0; i < appMap.size(); i++) {
+            appList.add(appMap.valueAt(i));
         }
 
         Collections.sort(appList);
