@@ -159,6 +159,18 @@ public class ScriptRunner extends Thread {
             mResults = results;
         }
 
+        private static String getMessage(Throwable t) {
+            StringBuilder sb = new StringBuilder();
+
+            Throwable cause = t;
+            while (cause != null) {
+                sb.append(t.toString() + "/n");
+                cause = cause.getCause();
+            }
+
+            return sb.toString();
+        }
+
         public int run() {
             synchronized (sLock) {
                 BufferedReader r = null;
@@ -205,7 +217,7 @@ public class ScriptRunner extends Thread {
                     execCode = p.waitFor();
                 } catch (IOException e1) {
                     Log.e(Utils.TAG, e1.toString());
-                    mResults[1] = e1.toString();
+                    mResults[1] = getMessage(e1);
                 } catch (InterruptedException e2) {
                     throw new RuntimeException(e2);
                 } finally {
