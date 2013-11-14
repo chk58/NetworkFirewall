@@ -15,15 +15,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import chk.android.networkfirewall.AppInfo.AppInfoListUid;
 import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
 import chk.android.networkfirewall.controller.Controller;
 import chk.android.networkfirewall.view.WallCheckBox;
 import chk.android.networkfirewall.view.WallCheckBox.OnStartProcessListener;
 
-public class ApplicationListAdapter extends BaseAdapter implements
+public class ApplicationListAdapter extends BaseExpandableListAdapter implements
         OnStartProcessListener {
 
     @SuppressLint("SimpleDateFormat")
@@ -125,27 +126,6 @@ public class ApplicationListAdapter extends BaseAdapter implements
         mParams = params;
     }
 
-    @Override
-    public int getCount() {
-        if (mAppList == null) {
-            return 0;
-        }
-        return mAppList.size();
-    }
-
-    @Override
-    public AppInfo getItem(int position) {
-        if (mAppList == null || position < 0 || position >= mAppList.size()) {
-            return null;
-        }
-        return mAppList.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return -1;
-    }
-
     public void setAppList(ArrayList<AppInfo> appList) {
         if (mProcessThread != null) {
             mProcessThread.quit();
@@ -160,69 +140,6 @@ public class ApplicationListAdapter extends BaseAdapter implements
         } else {
             notifyDataSetInvalidated();
         }
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View v;
-        if (convertView != null) {
-            v = convertView;
-        } else {
-            v = mInflater.inflate(R.layout.application_list_item, null);
-        }
-        if (mAppList == null || position < 0 || position >= mAppList.size()) {
-            return v;
-        }
-
-        AppInfo app = mAppList.get(position);
-        ImageView iv = (ImageView) v.findViewById(R.id.app_icon);
-        iv.setImageDrawable(app.icon);
-
-        TextView tv = (TextView) v.findViewById(R.id.app_label);
-        // SpannableStringBuilder ssb = new SpannableStringBuilder("(" +
-        // String.valueOf(app.uid) + ") ");
-        // ssb.append(Utils.highlightQuery(mParams.query, app.label));
-        // tv.setText(ssb);
-        tv.setText(Utils.highlightQuery(mParams.query, app.label));
-
-        tv = (TextView) v.findViewById(R.id.last_update_time);
-        String time = "-";
-        try {
-            time = DATE_FORMAT.format(new Date(app.lastUpdateTime));
-        } catch (Exception e) {
-        }
-        tv.setText(time);
-
-        tv = (TextView) v.findViewById(R.id.app_package_name);
-        tv.setText(Utils.highlightQuery(mParams.query, app.packageName));
-
-        // Switch s = (Switch) v.findViewById(R.id.app_wifi);
-        // s.setChecked(!app.disabledWifi);
-        // s.setTag(app.uid);
-        // // s.setEnabled(false);
-        // s.setOnClickListener(this);
-        //
-        // s = (Switch) v.findViewById(R.id.app_3g);
-        // s.setChecked(!app.disabled3g);
-        // s.setTag(app.uid);
-        // // s.setEnabled(false);
-        // s.setOnClickListener(this);
-
-        WallCheckBox checkBox = (WallCheckBox) v.findViewById(R.id.checkbox_wifi);
-        checkBox.setStatus(!app.disabledWifi, app.processingWifi);
-        checkBox.setTag(position);
-        checkBox.setOnStartProcessListener(this);
-
-        checkBox = (WallCheckBox) v.findViewById(R.id.checkbox_3g);
-        checkBox.setStatus(!app.disabled3g, app.processing3g);
-        checkBox.setTag(position);
-        checkBox.setOnStartProcessListener(this);
-        // ImageButton button = (ImageButton) v.findViewById(R.id.button);
-        // TransitionDrawable drawable = (TransitionDrawable)
-        // button.getDrawable();
-        // drawable.startTransition(500);
-
-        return v;
     }
 
     @Override
@@ -267,5 +184,189 @@ public class ApplicationListAdapter extends BaseAdapter implements
         m.obj = a;
         m.arg1 = mode;
         mProcessHanlder.sendMessage(m);
+    }
+
+    @Override
+    public int getGroupCount() {
+        return mAppList == null ? 0 : mAppList.size();
+    }
+
+    @Override
+    public int getChildrenCount(int groupPosition) {
+        int result = 0;
+        if (mAppList != null && groupPosition >= 0
+                && groupPosition < mAppList.size()) {
+            AppInfo app = mAppList.get(groupPosition);
+            if (app instanceof AppInfoListUid) {
+                result = ((AppInfoListUid) app).getCount();
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public AppInfo getGroup(int groupPosition) {
+        if (mAppList != null && groupPosition >= 0
+                && groupPosition < mAppList.size()) {
+            return mAppList.get(groupPosition);
+        }
+        return null;
+    }
+
+    @Override
+    public AppInfo getChild(int groupPosition, int childPosition) {
+        if (mAppList != null && groupPosition >= 0
+                && groupPosition < mAppList.size()) {
+            AppInfo app = mAppList.get(groupPosition);
+            if (app instanceof AppInfoListUid) {
+                AppInfoListUid appUidList = (AppInfoListUid) app;
+                if (childPosition >= 0 && childPosition < appUidList.getCount()) {
+                    return appUidList.get(childPosition);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public View getGroupView(int groupPosition, boolean isExpanded,
+            View convertView, ViewGroup parent) {
+        if (mAppList == null || groupPosition < 0
+                || groupPosition >= mAppList.size()) {
+            return null;
+        }
+
+        View v;
+        if (convertView != null) {
+            v = convertView;
+        } else {
+            v = mInflater.inflate(R.layout.application_list_item, null);
+        }
+        int childrenCount = getChildrenCount(groupPosition);
+        boolean isGroup = childrenCount > 0;
+        AppInfo app = mAppList.get(groupPosition);
+        ImageView iv = (ImageView) v.findViewById(R.id.app_icon);
+        if (isGroup) {
+            if (isExpanded) {
+                iv.setImageResource(android.R.drawable.arrow_up_float);
+            } else {
+                iv.setImageResource(android.R.drawable.arrow_down_float);
+            }
+        } else {
+            iv.setImageDrawable(app.icon);
+        }
+
+        TextView tv = (TextView) v.findViewById(R.id.app_label);
+        // SpannableStringBuilder ssb = new SpannableStringBuilder("(" +
+        // String.valueOf(app.uid) + ") ");
+        // ssb.append(Utils.highlightQuery(mParams.query, app.label));
+        // tv.setText(ssb);
+        if (isGroup) {
+            tv.setText(mContext.getResources().getString(
+                    R.string.item_title_pacakges_same_uid, childrenCount));
+        } else {
+            tv.setText(Utils.highlightQuery(mParams.query, app.label));
+        }
+
+        tv = (TextView) v.findViewById(R.id.last_update_time);
+        String time = "-";
+        try {
+            time = DATE_FORMAT.format(new Date(app.lastUpdateTime));
+        } catch (Exception e) {
+        }
+        tv.setText(time);
+
+        tv = (TextView) v.findViewById(R.id.app_package_name);
+        if (isGroup) {
+            tv.setText(R.string.item_pacakges_same_uid);
+        } else {
+            tv.setText(Utils.highlightQuery(mParams.query, app.packageName));
+        }
+
+        WallCheckBox checkBox = (WallCheckBox) v
+                .findViewById(R.id.checkbox_wifi);
+        checkBox.setStatus(!app.disabledWifi, app.processingWifi);
+        checkBox.setTag(groupPosition);
+        checkBox.setOnStartProcessListener(this);
+
+        checkBox = (WallCheckBox) v.findViewById(R.id.checkbox_3g);
+        checkBox.setStatus(!app.disabled3g, app.processing3g);
+        checkBox.setTag(groupPosition);
+        checkBox.setOnStartProcessListener(this);
+
+        return v;
+    }
+
+    @Override
+    public View getChildView(int groupPosition, int childPosition,
+            boolean isLastChild, View convertView, ViewGroup parent) {
+        if (mAppList == null || groupPosition < 0
+                || groupPosition >= mAppList.size()) {
+            return null;
+        }
+
+        AppInfo a = mAppList.get(groupPosition);
+        if (!(a instanceof AppInfoListUid)) {
+            return null;
+        }
+        AppInfoListUid appUidList = (AppInfoListUid) a;
+
+        if (childPosition < 0 || childPosition >= appUidList.getCount()) {
+            return null;
+        }
+
+        AppInfo appUid = appUidList.get(childPosition);
+
+        View v;
+        if (convertView != null) {
+            v = convertView;
+        } else {
+            v = mInflater.inflate(R.layout.same_uid_list_item, null);
+        }
+
+        ImageView iv = (ImageView) v.findViewById(R.id.app_icon);
+        iv.setImageDrawable(appUid.icon);
+
+        TextView tv = (TextView) v.findViewById(R.id.app_label);
+        // SpannableStringBuilder ssb = new SpannableStringBuilder("(" +
+        // String.valueOf(app.uid) + ") ");
+        // ssb.append(Utils.highlightQuery(mParams.query, app.label));
+        // tv.setText(ssb);
+
+        tv.setText(Utils.highlightQuery(mParams.query, appUid.label));
+
+
+        tv = (TextView) v.findViewById(R.id.last_update_time);
+        String time = "-";
+        try {
+            time = DATE_FORMAT.format(new Date(appUid.lastUpdateTime));
+        } catch (Exception e) {
+        }
+        tv.setText(time);
+
+        tv = (TextView) v.findViewById(R.id.app_package_name);
+        tv.setText(Utils.highlightQuery(mParams.query, appUid.packageName));
+
+        return v;
+    }
+
+    @Override
+    public long getGroupId(int groupPosition) {
+        return groupPosition;
+    }
+
+    @Override
+    public long getChildId(int groupPosition, int childPosition) {
+        return childPosition;
+    }
+
+    @Override
+    public boolean hasStableIds() {
+        return false;
+    }
+
+    @Override
+    public boolean isChildSelectable(int groupPosition, int childPosition) {
+        return true;
     }
 }

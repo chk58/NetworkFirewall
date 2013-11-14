@@ -110,25 +110,6 @@ public class ApplicationListLoader extends AsyncTaskLoader<Object> {
             }
 
             String label = a.loadLabel(pm).toString();
-            if (!TextUtils.isEmpty(mParams.query)) {
-                boolean hit = false;
-                if (!TextUtils.isEmpty(label)
-                        && label.toLowerCase(Locale.ENGLISH).contains(
-                                mParams.query.toLowerCase(Locale.ENGLISH))) {
-                    hit = true;
-                }
-                if (!TextUtils.isEmpty(a.packageName)
-                        && a.packageName
-                                .toLowerCase(Locale.ENGLISH)
-                                .contains(
-                                        mParams.query
-                                                .toLowerCase(Locale.ENGLISH))) {
-                    hit = true;
-                }
-                if (!hit) {
-                    continue;
-                }
-            }
 
             AppInfo app = new AppInfo(pm, a, label, p.lastUpdateTime);
             app.disabledWifi = disabledWifi;
@@ -141,6 +122,8 @@ public class ApplicationListLoader extends AsyncTaskLoader<Object> {
                 ((AppInfoListUid) appUid).add(app);
             } else {
                 AppInfoListUid uidList = new AppInfoListUid(uid);
+                uidList.disabledWifi = disabledWifi;
+                uidList.disabled3g = disabled3g;
                 uidList.add(appUid);
                 uidList.add(app);
                 appMap.put(uid, uidList);
@@ -148,10 +131,52 @@ public class ApplicationListLoader extends AsyncTaskLoader<Object> {
         }
 
         for (int i = 0; i < appMap.size(); i++) {
-            appList.add(appMap.valueAt(i));
+            AppInfo app = appMap.valueAt(i);
+            if (!TextUtils.isEmpty(mParams.query)) {
+                if (app instanceof AppInfoListUid) {
+                    AppInfoListUid appUidList = (AppInfoListUid) app;
+                    boolean match = false;
+                    for (int j = 0; j < appUidList.getCount(); j++) {
+                        AppInfo appUid = appUidList.get(j);
+                        if (matchQuery(appUid, mParams.query)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                    if (!match) {
+                        continue;
+                    }
+                } else {
+                    if (!matchQuery(app, mParams.query)) {
+                        continue;
+                    }
+                }
+            }
+
+            appList.add(app);
         }
 
         Collections.sort(appList);
         return appList;
+    }
+
+    private boolean matchQuery(AppInfo app, String query) {
+        if (app instanceof AppInfoListUid) {
+            return false;
+        }
+        boolean hit = false;
+        String label = app.label;
+        String pacakge = app.packageName;
+        if (!TextUtils.isEmpty(label)
+                && label.toLowerCase(Locale.ENGLISH).contains(
+                        mParams.query.toLowerCase(Locale.ENGLISH))) {
+            hit = true;
+        }
+        if (!TextUtils.isEmpty(pacakge)
+                && pacakge.toLowerCase(Locale.ENGLISH).contains(
+                        mParams.query.toLowerCase(Locale.ENGLISH))) {
+            hit = true;
+        }
+        return hit;
     }
 }

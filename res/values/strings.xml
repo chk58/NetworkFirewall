@@ -13,5 +13,6 @@
     <string name="search_hint">App/package name</string>
     <string name="context_menu_app_info">Application information</string>
     <string name="error_text_no_permission">Permission denied!\nPlease ensure your device has been ROOTed.\n\nClick to retry.</string>
-
+    <string name="item_title_pacakges_same_uid">%1$d apps share same uid</string>
+    <string name="item_pacakges_same_uid">If you prohibit this uid, all of the apps will be prohibited.</string>
 </resources>

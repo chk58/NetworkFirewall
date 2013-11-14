@@ -3,7 +3,7 @@ package chk.android.networkfirewall;
 import java.util.ArrayList;
 
 import android.app.ActionBar;
-import android.app.ListActivity;
+import android.app.ExpandableListActivity;
 import android.app.LoaderManager;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.ActivityNotFoundException;
@@ -23,12 +23,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Adapter;
-import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.TextView;
+import chk.android.networkfirewall.AppInfo.AppInfoListUid;
 import chk.android.networkfirewall.ApplicationListLoader.LoaderParams;
 
-public class ApplicationListActivity extends ListActivity implements
+public class ApplicationListActivity extends ExpandableListActivity implements
         LoaderCallbacks<Object>, OnClickListener {
 
     private static final int LOADER_ID = 0;
@@ -72,7 +74,7 @@ public class ApplicationListActivity extends ListActivity implements
         mObserver = new PackageChangedObserver();
         getContentResolver().registerContentObserver(Utils.NOTIFY_URI_PACAKGE_CHANGED, false,
                 mObserver);
-        registerForContextMenu(getListView());
+        registerForContextMenu(getExpandableListView());
         mAdatper = new ApplicationListAdapter(this, null, mParams);
         mAdatper.registerDataSetObserver(new DataSetObserver() {
             @Override
@@ -80,6 +82,7 @@ public class ApplicationListActivity extends ListActivity implements
                 mErrorText.setVisibility(View.VISIBLE);
             }
         });
+        getExpandableListView().setGroupIndicator(null);
         setListAdapter(mAdatper);
         loadAppList();
     }
@@ -101,7 +104,7 @@ public class ApplicationListActivity extends ListActivity implements
             getContentResolver().unregisterContentObserver(mObserver);
             mObserver = null;
         }
-        unregisterForContextMenu(getListView());
+        unregisterForContextMenu(getExpandableListView());
         mLoader = null;
         getLoaderManager().destroyLoader(LOADER_ID);
         mAdatper.setAppList(null);
@@ -118,18 +121,31 @@ public class ApplicationListActivity extends ListActivity implements
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
             ContextMenuInfo menuInfo) {
-        Adapter adapter = getListAdapter();
+        ExpandableListAdapter adapter = getExpandableListAdapter();
         if (adapter == null) {
             return;
         }
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        if (info.position < 0 || info.position >= adapter.getCount()) {
+        ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) menuInfo;
+        int group = ExpandableListView
+                .getPackedPositionGroup(info.packedPosition);
+        int child = ExpandableListView
+                .getPackedPositionChild(info.packedPosition);
+        if (group < 0 || group >= adapter.getGroupCount()) {
             return;
         }
-        AppInfo app = (AppInfo) getListAdapter().getItem(info.position);
+        AppInfo app = (AppInfo) adapter.getGroup(group);
         if (app == null) {
             return;
         }
+
+        if (app instanceof AppInfoListUid) {
+            AppInfoListUid appUidList = (AppInfoListUid) app;
+            if (child < 0 || child >= appUidList.getCount()) {
+                return;
+            }
+            app = appUidList.get(child);
+        }
+
         menu.setHeaderIcon(app.icon);
         menu.setHeaderTitle(app.label);
         menu.add(0, CONTEXT_MENU_APP_INFO, Menu.NONE,
@@ -138,29 +154,43 @@ public class ApplicationListActivity extends ListActivity implements
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        Adapter adapter = getListAdapter();
+        ExpandableListAdapter adapter = getExpandableListAdapter();
         if (adapter == null) {
             return false;
         }
-        AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
-        if (menuInfo.position < 0 || menuInfo.position >= adapter.getCount()) {
+        ExpandableListContextMenuInfo info = (ExpandableListContextMenuInfo) item
+                .getMenuInfo();
+        int group = ExpandableListView
+                .getPackedPositionGroup(info.packedPosition);
+        int child = ExpandableListView
+                .getPackedPositionChild(info.packedPosition);
+        if (group < 0 || group >= adapter.getGroupCount()) {
             return false;
         }
-        AppInfo app = (AppInfo) getListAdapter().getItem(menuInfo.position);
+        AppInfo app = (AppInfo) adapter.getGroup(group);
         if (app == null) {
             return false;
         }
+
+        if (app instanceof AppInfoListUid) {
+            AppInfoListUid appUidList = (AppInfoListUid) app;
+            if (child < 0 || child >= appUidList.getCount()) {
+                return false;
+            }
+            app = appUidList.get(child);
+        }
+
         switch (item.getItemId()) {
-            case CONTEXT_MENU_APP_INFO:
-                try {
-                    Uri uri = Uri.parse("package:" + app.packageName);
-                    Intent i = new Intent(
-                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS, uri);
-                    startActivity(i);
-                } catch (ActivityNotFoundException e) {
-                    Log.e(Utils.TAG, "Package : " + app.packageName + " not found!");
-                }
-                return true;
+        case CONTEXT_MENU_APP_INFO:
+            try {
+                Uri uri = Uri.parse("package:" + app.packageName);
+                Intent i = new Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS, uri);
+                startActivity(i);
+            } catch (ActivityNotFoundException e) {
+                Log.e(Utils.TAG, "Package : " + app.packageName + " not found!");
+            }
+            return true;
         }
         return super.onContextItemSelected(item);
     }
