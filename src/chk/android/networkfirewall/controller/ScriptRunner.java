@@ -209,7 +209,10 @@ public class ScriptRunner extends Thread {
                             execError.append(s + "\n");
                         }
                         mResults[0] = execResult.toString();
-                        mResults[1] = execError.toString();
+                        String error = execError.toString();
+                        if (error.contains("Permission denied")) {
+                            mResults[1] = error;
+                        }
                     }
                     execCode = p.waitFor();
                 } catch (IOException e1) {
